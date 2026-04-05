@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mini TTS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            neonGreen: '#00FF00',
+            darkGray: '#121212',
+            borderGray: '#2A2A2A',
+            nearWhite: '#E0E0E0',
+          },
+          fontFamily: {
+            mono: ['JetBrains Mono', 'Consolas', 'monospace'],
+            sans: ['JetBrains Mono', 'Consolas', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      background-color: transparent;
+      color: #ffffff;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+    }
+    .utility-window {
+      width: 800px;
+      height: 520px;
+      min-width: 600px;
+      min-height: 400px;
+      max-width: 800px;
+      max-height: 520px;
+      background-color: #000000;
+      border: 1px solid #2A2A2A;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      resize: both;
+      overflow: hidden;
+      position: relative;
+      border-radius: 16px;
+      clip-path: inset(0 round 16px);
+    }
+     header {
+       -webkit-app-region: drag;
+       cursor: move;
+     }
+     header button, header h1, header svg, header select, section select, header div {
+       -webkit-app-region: no-drag;
+       cursor: default;
+     }
+     header button {
+       cursor: pointer !important;
+       pointer-events: auto !important;
+     }
+     header button * {
+       pointer-events: none;
+     }
+     ::-webkit-scrollbar { display: none; }
+    html, body, .utility-window, section {
+      overflow: hidden !important;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    /* textarea 允许自由滚动，响应鼠标滚轮 */
+    textarea {
+      overflow-y: scroll !important;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    textarea::-webkit-scrollbar {
+      width: 0;
+      background: transparent;
+    }
+    select option {
+      background-color: #121212 !important;
+      color: #00FF00 !important;
+    }
+    /* 语音选择下拉菜单固定高度，支持滚动 */
+    #voice-select {
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    #voice-select option {
+      padding: 4px 8px;
+    }
+    /* 隐形滚动条样式 */
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 4px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: #2A2A2A;
+      border-radius: 2px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+      background: #3A3A3A;
+    }
+    /* Firefox */
+    .scrollbar-thin {
+      scrollbar-width: thin;
+      scrollbar-color: #2A2A2A transparent;
+    }
+    /* 纵向音量滑块样式 */
+    .vertical-slider {
+      writing-mode: vertical-lr;
+      direction: rtl;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .vertical-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #00FF00;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
+    }
+    .vertical-slider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #00FF00;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
+    }
+    /* 全局字体：JetBrains Mono 统一中英文风格 */
+    body, body * {
+      font-family: 'JetBrains Mono', 'Consolas', monospace !important;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+    }
+    /* 按钮和输入框保持正常 */
+    button, input, select, textarea {
+      font-family: inherit !important;
+    }
+  </style>
+</head>
+<body class="font-sans">
+<!-- Privacy Notice Modal -->
+<div id="privacy-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden">
+<div class="bg-darkGray border border-borderGray rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+<div class="text-center mb-4">
+<svg class="h-12 w-12 text-neonGreen mx-auto mb-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<h2 class="text-lg font-bold text-neonGreen mb-2">Privacy Notice</h2>
+</div>
+<div class="text-sm text-nearWhite/80 leading-relaxed mb-6 max-h-48 overflow-y-auto">
+<p class="mb-3">Mini TTS collects anonymous usage data to improve the product. This includes:</p>
+<ul class="list-disc list-inside mb-3 space-y-1 text-nearWhite/70">
+<li>Anonymous device ID (randomly generated)</li>
+<li>Usage statistics (launch count, button clicks, session duration)</li>
+</ul>
+<p class="mb-3">We do NOT collect:</p>
+<ul class="list-disc list-inside space-y-1 text-nearWhite/70">
+<li>Personal information</li>
+<li>Input text content</li>
+<li>Voice recordings</li>
+</ul>
+<p class="mt-4 text-nearWhite/60 text-xs">By clicking "I Agree", you consent to the collection of anonymous usage data.</p>
+</div>
+<div class="flex gap-3">
+<button id="btn-privacy-disagree" class="flex-1 py-2.5 rounded-lg border border-borderGray text-nearWhite/60 font-bold hover:bg-borderGray transition-colors">Disagree</button>
+<button id="btn-privacy-agree" class="flex-1 py-2.5 rounded-lg bg-neonGreen text-black font-bold hover:bg-neonGreen/90 transition-colors">I Agree</button>
+</div>
+</div>
+</div>
+<main class="utility-window flex flex-col overflow-hidden relative">
+<header class="flex justify-between items-center px-6 py-2.5 border-b border-[#333333]">
+<div class="flex items-center space-x-3">
+<svg class="h-6 w-6 text-neonGreen" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<h1 class="text-[16px] font-black tracking-[0.15em] text-nearWhite">Mini TTS</h1>
+</div>
+<div class="flex space-x-4 text-nearWhite/70">
+<button class="hover:text-neonGreen transition-colors p-1 -m-1" id="btn-settings" title="Settings">
+<svg class="h-4 w-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<div class="flex space-x-1.5 border-l border-borderGray pl-4 ml-2 items-center">
+<button class="w-2.5 h-2.5 rounded-full bg-borderGray hover:bg-yellow-500 transition-colors" id="btn-minimize" title="Minimize"></button>
+<button class="w-2.5 h-2.5 rounded-full bg-borderGray hover:bg-green-500 transition-colors" id="btn-maximize" title="Maximize"></button>
+<button class="w-2.5 h-2.5 rounded-full bg-red-900/80 hover:bg-red-500 transition-colors" id="btn-close" title="Close"></button>
+</div>
+</div>
+</header>
+<section class="px-8 py-3.5 bg-darkGray/30">
+<div class="flex items-start justify-between gap-4">
+<div class="flex flex-col">
+<label class="text-nearWhite uppercase font-bold mb-1 tracking-widest text-[16px]">Language</label>
+<select class="bg-transparent border-none text-neonGreen font-bold focus:ring-0 p-0 cursor-pointer hover:text-white transition-colors text-[14px]" id="language-select">
+<option value="zh-CN">Chinese (Mandarin)</option>
+<option value="zh-TW">Chinese (Taiwan)</option>
+<option value="zh-HK">Chinese (Cantonese)</option>
+<option value="en-US">English (US)</option>
+<option value="en-GB">English (UK)</option>
+<option value="en-AU">English (Australia)</option>
+<option value="en-CA">English (Canada)</option>
+<option value="en-IN">English (India)</option>
+<option value="ja-JP">Japanese</option>
+<option value="ko-KR">Korean</option>
+<option value="es-ES">Spanish (Spain)</option>
+<option value="es-MX">Spanish (Mexico)</option>
+<option value="fr-FR">French (France)</option>
+<option value="fr-CA">French (Canada)</option>
+<option value="de-DE">German</option>
+<option value="it-IT">Italian</option>
+<option value="pt-BR">Portuguese (Brazil)</option>
+<option value="pt-PT">Portuguese (Portugal)</option>
+</select>
+</div>
+<div class="flex flex-col">
+<label class="text-nearWhite uppercase font-bold mb-1 tracking-widest text-[16px]">Voice</label>
+<select class="bg-transparent border-none text-neonGreen font-bold focus:ring-0 p-0 cursor-pointer hover:text-white transition-colors text-[14px]" id="voice-select">
+<option value="zh-CN-XiaoxiaoNeural">Xiaoxiao (Female)</option>
+</select>
+</div>
+<div class="flex flex-col items-center -mt-1">
+<button class="flex items-center space-x-2 text-nearWhite border border-borderGray px-1 py-0.5 rounded-md hover:bg-borderGray transition-all text-[13px] font-bold uppercase tracking-widest" id="btn-open">
+<svg class="h-3 w-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Open</span>
+</button>
+</div>
+<div class="flex flex-col items-end -mt-[6px]">
+<button class="flex items-center space-x-2 text-nearWhite border border-borderGray px-1 py-0.5 rounded-md hover:bg-borderGray transition-all text-[13px] font-bold uppercase tracking-widest" id="btn-save">
+<svg class="h-3 w-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Save To</span>
+</button>
+<div class="text-[16px] text-gray-500 font-medium mt-1" id="save-path-display">Not set</div>
+</div>
+</div>
+</section>
+<!-- Divider Line between language and Input Buffer -->
+<div class="h-px bg-borderGray/40 mx-6 my-2"></div>
+<section class="flex-grow flex flex-col p-6 pt-4 pb-2 gap-3 min-h-0">
+<!-- Input Buffer Header -->
+<div class="flex justify-between items-center px-1 -mt-[15px]">
+<span class="text-[15px] font-bold text-neonGreen uppercase tracking-widest">Input Buffer</span>
+<div class="flex items-center gap-1" id="rate-controls-wrapper">
+<label class="text-[16px] text-nearWhite/70 uppercase font-bold flex-shrink-0">Rate:</label>
+<input class="w-12 h-0.75 bg-borderGray rounded appearance-none cursor-pointer accent-neonGreen flex-shrink-0" type="range" min="0.5" max="2" step="0.1" value="1" id="rate-slider"/>
+<span class="text-[16px] font-bold text-neonGreen flex-shrink-0" id="rate-display">1.0x</span>
+<button class="px-1 py-0 text-[16px] font-bold text-black bg-neonGreen rounded hover:bg-white transition-all flex-shrink-0 h-[22px]" id="btn-rate">Apply</button>
+<span class="text-[16px] text-nearWhite/70 uppercase font-bold flex-shrink-0 ml-[23px]">PAUSE:</span>
+<button class="px-1 py-0.5 text-[16px] font-bold text-nearWhite border border-borderGray rounded hover:bg-borderGray transition-all flex-shrink-0" id="btn-pause-05">[0.5s]</button>
+<button class="px-1 py-0.5 text-[16px] font-bold text-nearWhite border border-borderGray rounded hover:bg-borderGray transition-all flex-shrink-0" id="btn-pause-1">[1s]</button>
+</div>
+<div class="text-[16px] font-semibold text-nearWhite" id="char-count">0 chars</div>
+</div>
+<!-- Textarea -->
+<div class="relative flex-grow min-h-[15px] group">
+<div class="absolute -inset-0.5 bg-neonGreen/5 rounded-xl blur opacity-20 group-focus-within:opacity-100 transition duration-500"></div>
+<textarea class="relative w-full h-full bg-darkGray border border-borderGray rounded-xl p-4 text-gray-100 placeholder-nearWhite/30 focus:outline-none focus:border-neonGreen/40 focus:ring-0 transition-all resize-none overflow-y-auto scrollbar-thin scrollbar-thumb-borderGray scrollbar-track-transparent" style="font-family: 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 15px; font-weight: 400; line-height: 1.8; letter-spacing: 0.02em;" id="tts-input" placeholder="ENTER TEXT TO SYNTHESIZE..."></textarea>
+</div>
+</section>
+<!-- Bottom Bar: Vol (left) | Player | Execute -->
+<section class="flex items-center gap-3 px-4 py-2 min-h-0 bg-gradient-to-r from-darkGray/80 to-darkGray/60">
+<!-- Vertical Volume Slider at left -->
+<div class="flex items-center gap-2 pl-2">
+<div class="relative">
+<input class="h-10 w-1 bg-borderGray/60 rounded-full appearance-none cursor-pointer accent-neonGreen vertical-slider" type="range" min="0" max="100" step="1" value="100" id="vol-slider-vertical"/>
+</div>
+<span class="w-10 text-[11px] font-mono font-medium text-nearWhite/50 tracking-tight text-right" id="vol-display-vertical">100%</span>
+</div>
+
+<!-- Audio Player Module -->
+<div class="flex items-center gap-3 flex-grow">
+<!-- Play Button - Large Circle Style -->
+<button class="w-8 h-8 flex items-center justify-center rounded-full bg-neonGreen/90 hover:bg-neonGreen shadow-lg shadow-neonGreen/30 transition-all duration-200 active:scale-95" id="btn-player-play" title="Play/Pause">
+<svg class="w-4 h-4 text-black ml-0.5" id="icon-play" fill="currentColor" viewbox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+<svg class="w-4 h-4 text-black hidden" id="icon-pause" fill="currentColor" viewbox="0 0 20 20"><path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"/></svg>
+</button>
+
+<!-- Progress Bar - Clean Style -->
+<div class="flex items-center gap-2 flex-grow mr-[75px]">
+<div class="flex items-center gap-1.5 font-mono text-[11px] text-nearWhite/50">
+<span class="tabular-nums" id="player-current-time">0:00</span>
+</div>
+<div class="flex-grow relative h-1 bg-borderGray/50 rounded-full cursor-pointer group" id="player-progress-bar">
+<div class="absolute inset-y-0 left-0 bg-neonGreen rounded-full transition-all" id="player-progress" style="width: 0%"></div>
+<div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-neonGreen rounded-full shadow-lg shadow-neonGreen/40 opacity-0 group-hover:opacity-100 transition-opacity" id="player-progress-handle" style="left: 0%"></div>
+</div>
+<div class="flex items-center gap-1.5 font-mono text-[11px] text-nearWhite/50">
+<span class="tabular-nums" id="player-remaining-time">-0:00</span>
+</div>
+</div>
+
+<!-- Stop Button + Open Audio as unit -->
+<div class="flex items-center gap-2 -ml-[60px]">
+<!-- Stop Button -->
+<button class="w-9 h-9 flex items-center justify-center rounded-full border border-nearWhite/60 hover:bg-nearWhite/10 hover:border-nearWhite/80 transition-all duration-200" id="btn-player-stop" title="Stop">
+<svg class="w-3 h-3 text-nearWhite/60" fill="currentColor" viewbox="0 0 16 16"><rect x="3" y="3" width="10" height="10" rx="1"/></svg>
+</button>
+
+<!-- Open Button -->
+<button class="px-3 py-1.5 text-[13px] font-bold uppercase text-nearWhite border border-borderGray/60 rounded-md hover:bg-borderGray transition-all duration-200 tracking-wider" id="btn-open-audio" title="Open Audio">Open Audio</button>
+</div>
+</div>
+
+<!-- Divider -->
+<div class="w-px h-8 bg-borderGray/30 mx-2"></div>
+
+<!-- Execute Button -->
+<div class="flex items-center pr-2">
+<button class="neon-glow flex items-center gap-1 bg-neonGreen text-black font-bold px-4 py-1.5 rounded-md hover:bg-neonGreen/90 shadow-lg shadow-neonGreen/20 transition-all duration-200 active:scale-95 group" id="btn-play">
+<span class="text-[15px] uppercase font-bold tracking-wider">Execute</span>
+<svg class="h-3.5 w-3.5 transform group-hover:translate-x-0.5 transition-transform ml-0.5" fill="currentColor" viewbox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+</button>
+</div>
+</section>
+</main>
+<script>
+    const { invoke } = window.__TAURI__.core;
+
+    // Azure Neural TTS 完整语音列表（支持多语言、多风格）
+    const azureVoicesByLanguage = {
+        'zh-CN': [
+            { value: 'zh-CN-XiaoxiaoNeural', label: 'Xiaoxiao (Female)', styles: ['general', 'assistant', 'chat', 'calm', 'angry', 'cheerful', 'sad'] },
+            { value: 'zh-CN-XiaoyiNeural', label: 'Xiaoyi (Female)', styles: ['general', 'angry', 'cheerful', 'sad'] },
+            { value: 'zh-CN-YunjianNeural', label: 'Yunjian (Male)', styles: ['general', 'narration'] },
+            { value: 'zh-CN-YunxiNeural', label: 'Yunxi (Male)', styles: ['general', 'assistant', 'chat', 'cheerful', 'sad', 'angry'] },
+            { value: 'zh-CN-YunxiaNeural', label: 'Yunxia (Male)', styles: ['general', 'cheerful', 'angry', 'sad'] },
+            { value: 'zh-CN-YunyangNeural', label: 'Yunyang (Male)', styles: ['general', 'customer service'] },
+            { value: 'zh-CN-liaoning-XiaobeiNeural', label: 'Xiaobei (Female)', styles: ['general'] },
+            { value: 'zh-CN-shaanxi-XiaoniNeural', label: 'Xiaoni (Female)', styles: ['general'] },
+        ],
+        'zh-TW': [
+            { value: 'zh-TW-HsiaoChenNeural', label: 'HsiaoChen (Female)', styles: ['general'] },
+            { value: 'zh-TW-YunJheNeural', label: 'YunJhe (Male)', styles: ['general'] },
+            { value: 'zh-TW-HsiaoYuNeural', label: 'HsiaoYu (Female)', styles: ['general'] },
+        ],
+        'zh-HK': [
+            { value: 'zh-HK-HiuGaaiNeural', label: 'HiuGaai (Female)', styles: ['general'] },
+            { value: 'zh-HK-HiuMaanNeural', label: 'HiuMaan (Female)', styles: ['general'] },
+            { value: 'zh-HK-WanLungNeural', label: 'WanLung (Male)', styles: ['general'] },
+        ],
+        'en-US': [
+            { value: 'en-US-JennyNeural', label: 'Jenny (Female)', styles: ['general', 'assistant', 'chat', 'customer service', 'newscast'] },
+            { value: 'en-US-AvaNeural', label: 'Ava (Female)', styles: ['general', 'angry', 'cheerful', 'sad', 'excited'] },
+            { value: 'en-US-AnaNeural', label: 'Ana (Female)', styles: ['general'] },
+            { value: 'en-US-AriaNeural', label: 'Aria (Female)', styles: ['general', 'narration', 'newscast'] },
+            { value: 'en-US-MichelleNeural', label: 'Michelle (Female)', styles: ['general'] },
+            { value: 'en-US-RogerNeural', label: 'Roger (Male)', styles: ['general'] },
+            { value: 'en-US-GuyNeural', label: 'Guy (Male)', styles: ['general', 'newscast'] },
+            { value: 'en-US-ChristopherNeural', label: 'Christopher (Male)', styles: ['general'] },
+            { value: 'en-US-EricNeural', label: 'Eric (Male)', styles: ['general'] },
+            { value: 'en-US-SteffanNeural', label: 'Steffan (Male)', styles: ['general'] },
+            { value: 'en-US-AndrewNeural', label: 'Andrew (Male)', styles: ['general', 'chat', 'newscast'] },
+        ],
+        'en-GB': [
+            { value: 'en-GB-SoniaNeural', label: 'Sonia (Female)', styles: ['general'] },
+            { value: 'en-GB-LibbyNeural', label: 'Libby (Female)', styles: ['general'] },
+            { value: 'en-GB-MaisieNeural', label: 'Maisie (Female)', styles: ['general'] },
+            { value: 'en-GB-RyanNeural', label: 'Ryan (Male)', styles: ['general'] },
+            { value: 'en-GB-ThomasNeural', label: 'Thomas (Male)', styles: ['general'] },
+        ],
+        'en-AU': [
+            { value: 'en-AU-NatashaNeural', label: 'Natasha (Female)', styles: ['general'] },
+            { value: 'en-AU-WilliamNeural', label: 'William (Male)', styles: ['general'] },
+        ],
+        'en-CA': [
+            { value: 'en-CA-ClaraNeural', label: 'Clara (Female)', styles: ['general'] },
+            { value: 'en-CA-LiamNeural', label: 'Liam (Male)', styles: ['general'] },
+        ],
+        'en-IN': [
+            { value: 'en-IN-NeerjaNeural', label: 'Neerja (Female)', styles: ['general'] },
+            { value: 'en-IN-PrabhatNeural', label: 'Prabhat (Male)', styles: ['general'] },
+        ],
+        'ja-JP': [
+            { value: 'ja-JP-NanamiNeural', label: 'Nanami (Female)', styles: ['general', 'chat', 'cheerful', 'sad'] },
+            { value: 'ja-JP-KeitaNeural', label: 'Keita (Male)', styles: ['general'] },
+            { value: 'ja-JP-AoiNeural', label: 'Aoi (Female)', styles: ['general'] },
+            { value: 'ja-JP-DaichiNeural', label: 'Daichi (Male)', styles: ['general'] },
+            { value: 'ja-JP-MayuNeural', label: 'Mayu (Female)', styles: ['general'] },
+            { value: 'ja-JP-NaokiNeural', label: 'Naoki (Male)', styles: ['general'] },
+            { value: 'ja-JP-ShioriNeural', label: 'Shiori (Female)', styles: ['general'] },
+        ],
+        'ko-KR': [
+            { value: 'ko-KR-SunHiNeural', label: 'Sun-Hi (Female)', styles: ['general'] },
+            { value: 'ko-KR-InJoonNeural', label: 'InJoon (Male)', styles: ['general'] },
+            { value: 'ko-KR-HyunsuNeural', label: 'Hyunsu (Male)', styles: ['general'] },
+            { value: 'ko-KR-SoonBokNeural', label: 'SoonBok (Female)', styles: ['general'] },
+        ],
+        'es-ES': [
+            { value: 'es-ES-ElviraNeural', label: 'Elvira (Female)', styles: ['general'] },
+            { value: 'es-ES-AlvaroNeural', label: 'Alvaro (Male)', styles: ['general'] },
+            { value: 'es-ES-AbrilNeural', label: 'Abril (Female)', styles: ['general'] },
+            { value: 'es-ES-ArnauNeural', label: 'Arnau (Male)', styles: ['general'] },
+            { value: 'es-ES-DarioNeural', label: 'Dario (Male)', styles: ['general'] },
+            { value: 'es-ES-EliasNeural', label: 'Elias (Male)', styles: ['general'] },
+            { value: 'es-ES-EstrellaNeural', label: 'Estrella (Female)', styles: ['general'] },
+            { value: 'es-ES-IreneNeural', label: 'Irene (Female)', styles: ['general'] },
+            { value: 'es-ES-LauraNeural', label: 'Laura (Female)', styles: ['general'] },
+            { value: 'es-ES-LiaNeural', label: 'Lia (Female)', styles: ['general'] },
+        ],
+        'es-MX': [
+            { value: 'es-MX-DaliaNeural', label: 'Dalia (Female)', styles: ['general'] },
+            { value: 'es-MX-JorgeNeural', label: 'Jorge (Male)', styles: ['general'] },
+            { value: 'es-MX-BeatrizNeural', label: 'Beatriz (Female)', styles: ['general'] },
+            { value: 'es-MX-CandelaNeural', label: 'Candela (Female)', styles: ['general'] },
+            { value: 'es-MX-CarlotaNeural', label: 'Carlota (Female)', styles: ['general'] },
+            { value: 'es-MX-CecilioNeural', label: 'Cecilio (Male)', styles: ['general'] },
+            { value: 'es-MX-GerardoNeural', label: 'Gerardo (Male)', styles: ['general'] },
+            { value: 'es-MX-LarissaNeural', label: 'Larissa (Female)', styles: ['general'] },
+            { value: 'es-MX-LibertoNeural', label: 'Liberto (Male)', styles: ['general'] },
+            { value: 'es-MX-LucianoNeural', label: 'Luciano (Male)', styles: ['general'] },
+            { value: 'es-MX-MarinaNeural', label: 'Marina (Female)', styles: ['general'] },
+            { value: 'es-MX-NuriaNeural', label: 'Nuria (Female)', styles: ['general'] },
+            { value: 'es-MX-PelayoNeural', label: 'Pelayo (Male)', styles: ['general'] },
+            { value: 'es-MX-RenataNeural', label: 'Renata (Female)', styles: ['general'] },
+            { value: 'es-MX-YagoNeural', label: 'Yago (Male)', styles: ['general'] },
+        ],
+        'fr-FR': [
+            { value: 'fr-FR-DeniseNeural', label: 'Denise (Female)', styles: ['general', 'cheerful', 'sad'] },
+            { value: 'fr-FR-HenriNeural', label: 'Henri (Male)', styles: ['general', 'cheerful', 'sad'] },
+            { value: 'fr-FR-EloiseNeural', label: 'Eloise (Female)', styles: ['general'] },
+            { value: 'fr-FR-RemyMultilingualNeural', label: 'Remy (Male)', styles: ['general'] },
+            { value: 'fr-FR-VivienneMultilingualNeural', label: 'Vivienne (Female)', styles: ['general'] },
+        ],
+        'fr-CA': [
+            { value: 'fr-CA-SylvieNeural', label: 'Sylvie (Female)', styles: ['general'] },
+            { value: 'fr-CA-AntoineNeural', label: 'Antoine (Male)', styles: ['general'] },
+            { value: 'fr-CA-JeanNeural', label: 'Jean (Male)', styles: ['general'] },
+        ],
+        'de-DE': [
+            { value: 'de-DE-KatjaNeural', label: 'Katja (Female)', styles: ['general'] },
+            { value: 'de-DE-ConradNeural', label: 'Conrad (Male)', styles: ['general'] },
+            { value: 'de-DE-AmalaNeural', label: 'Amala (Female)', styles: ['general'] },
+            { value: 'de-DE-BerndNeural', label: 'Bernd (Male)', styles: ['general'] },
+            { value: 'de-DE-ChristophNeural', label: 'Christoph (Male)', styles: ['general'] },
+            { value: 'de-DE-ElkeNeural', label: 'Elke (Female)', styles: ['general'] },
+            { value: 'de-DE-GiselaNeural', label: 'Gisela (Female)', styles: ['general'] },
+            { value: 'de-DE-KasperNeural', label: 'Kasper (Male)', styles: ['general'] },
+            { value: 'de-DE-KillianNeural', label: 'Killian (Male)', styles: ['general'] },
+            { value: 'de-DE-KlarissaNeural', label: 'Klarissa (Female)', styles: ['general'] },
+            { value: 'de-DE-KlausNeural', label: 'Klaus (Male)', styles: ['general'] },
+            { value: 'de-DE-LouisaNeural', label: 'Louisa (Female)', styles: ['general'] },
+            { value: 'de-DE-MajaNeural', label: 'Maja (Female)', styles: ['general'] },
+            { value: 'de-DE-RalfNeural', label: 'Ralf (Male)', styles: ['general'] },
+            { value: 'de-DE-TanjaNeural', label: 'Tanja (Female)', styles: ['general'] },
+        ],
+        'it-IT': [
+            { value: 'it-IT-ElsaNeural', label: 'Elsa (Female)', styles: ['general'] },
+            { value: 'it-IT-IsabellaNeural', label: 'Isabella (Female)', styles: ['general'] },
+            { value: 'it-IT-DiegoNeural', label: 'Diego (Male)', styles: ['general'] },
+            { value: 'it-IT-BenignoNeural', label: 'Benigno (Male)', styles: ['general'] },
+            { value: 'it-IT-CalimeroNeural', label: 'Calimero (Male)', styles: ['general'] },
+            { value: 'it-IT-CataldoNeural', label: 'Cataldo (Male)', styles: ['general'] },
+            { value: 'it-IT-FabiolaNeural', label: 'Fabiola (Female)', styles: ['general'] },
+            { value: 'it-IT-FiammaNeural', label: 'Fiamma (Female)', styles: ['general'] },
+            { value: 'it-IT-GianniNeural', label: 'Gianni (Male)', styles: ['general'] },
+            { value: 'it-IT-ImeldaNeural', label: 'Imelda (Female)', styles: ['general'] },
+            { value: 'it-IT-IrmaNeural', label: 'Irma (Female)', styles: ['general'] },
+            { value: 'it-IT-LisandroNeural', label: 'Lisandro (Male)', styles: ['general'] },
+            { value: 'it-IT-PalmiraNeural', label: 'Palmira (Female)', styles: ['general'] },
+            { value: 'it-IT-PierinaNeural', label: 'Pierina (Female)', styles: ['general'] },
+            { value: 'it-IT-RinaldoNeural', label: 'Rinaldo (Male)', styles: ['general'] },
+        ],
+        'pt-BR': [
+            { value: 'pt-BR-FranciscaNeural', label: 'Francisca (Female)', styles: ['general'] },
+            { value: 'pt-BR-AntonioNeural', label: 'Antonio (Male)', styles: ['general'] },
+            { value: 'pt-BR-BrendaNeural', label: 'Brenda (Female)', styles: ['general'] },
+            { value: 'pt-BR-DonatoNeural', label: 'Donato (Male)', styles: ['general'] },
+            { value: 'pt-BR-ElzaNeural', label: 'Elza (Female)', styles: ['general'] },
+            { value: 'pt-BR-FabioNeural', label: 'Fabio (Male)', styles: ['general'] },
+            { value: 'pt-BR-GiovannaNeural', label: 'Giovanna (Female)', styles: ['general'] },
+            { value: 'pt-BR-HumbertoNeural', label: 'Humberto (Male)', styles: ['general'] },
+            { value: 'pt-BR-JulioNeural', label: 'Julio (Male)', styles: ['general'] },
+            { value: 'pt-BR-LeilaNeural', label: 'Leila (Female)', styles: ['general'] },
+            { value: 'pt-BR-LeticiaNeural', label: 'Leticia (Female)', styles: ['general'] },
+            { value: 'pt-BR-ManuelaNeural', label: 'Manuela (Female)', styles: ['general'] },
+            { value: 'pt-BR-NicolauNeural', label: 'Nicolau (Male)', styles: ['general'] },
+            { value: 'pt-BR-ValerioNeural', label: 'Valerio (Male)', styles: ['general'] },
+            { value: 'pt-BR-YaraNeural', label: 'Yara (Female)', styles: ['general'] },
+        ],
+        'pt-PT': [
+            { value: 'pt-PT-RaquelNeural', label: 'Raquel (Female)', styles: ['general'] },
+            { value: 'pt-PT-DuarteNeural', label: 'Duarte (Male)', styles: ['general'] },
+        ],
+    };
+
+    // Edge TTS 完整语音列表（从 edge-tts 实时拉取，包含所有 Neural 高质量语音）
+    const edgeVoicesByLanguage = {
+        'zh-CN': [
+            { value: 'zh-CN-XiaoxiaoNeural', label: 'Xiaoxiao (Female)' },
+            { value: 'zh-CN-XiaoyiNeural',   label: 'Xiaoyi (Female)' },
+            { value: 'zh-CN-YunjianNeural',  label: 'Yunjian (Male)' },
+            { value: 'zh-CN-YunxiNeural',    label: 'Yunxi (Male)' },
+            { value: 'zh-CN-YunxiaNeural',   label: 'Yunxia (Male)' },
+            { value: 'zh-CN-YunyangNeural',  label: 'Yunyang (Male)' },
+            { value: 'zh-CN-liaoning-XiaobeiNeural', label: 'Xiaobei (Female)' },
+            { value: 'zh-CN-shaanxi-XiaoniNeural', label: 'Xiaoni (Female)' },
+        ],
+        'zh-TW': [
+            { value: 'zh-TW-HsiaoChenNeural', label: 'HsiaoChen (Female)' },
+            { value: 'zh-TW-YunJheNeural', label: 'YunJhe (Male)' },
+            { value: 'zh-TW-HsiaoYuNeural', label: 'HsiaoYu (Female)' },
+        ],
+        'zh-HK': [
+            { value: 'zh-HK-HiuGaaiNeural', label: 'HiuGaai (Female)' },
+            { value: 'zh-HK-HiuMaanNeural', label: 'HiuMaan (Female)' },
+            { value: 'zh-HK-WanLungNeural', label: 'WanLung (Male)' },
+        ],
+        'en-US': [
+            { value: 'en-US-AvaNeural',                  label: 'Ava (Female)' },
+            { value: 'en-US-AvaMultilingualNeural',      label: 'Ava (Female)' },
+            { value: 'en-US-AndrewNeural',               label: 'Andrew (Male)' },
+            { value: 'en-US-AndrewMultilingualNeural',   label: 'Andrew (Male)' },
+            { value: 'en-US-EmmaNeural',                 label: 'Emma (Female)' },
+            { value: 'en-US-EmmaMultilingualNeural',     label: 'Emma (Female)' },
+            { value: 'en-US-BrianNeural',                label: 'Brian (Male)' },
+            { value: 'en-US-BrianMultilingualNeural',    label: 'Brian (Male)' },
+            { value: 'en-US-AnaNeural',                  label: 'Ana (Female)' },
+            { value: 'en-US-AriaNeural',                 label: 'Aria (Female)' },
+            { value: 'en-US-ChristopherNeural',          label: 'Christopher (Male)' },
+            { value: 'en-US-EricNeural',                 label: 'Eric (Male)' },
+            { value: 'en-US-GuyNeural',                  label: 'Guy (Male)' },
+            { value: 'en-US-JennyNeural',                label: 'Jenny (Female)' },
+            { value: 'en-US-MichelleNeural',             label: 'Michelle (Female)' },
+            { value: 'en-US-RogerNeural',                label: 'Roger (Male)' },
+            { value: 'en-US-SteffanNeural',              label: 'Steffan (Male)' },
+        ],
+        'en-GB': [
+            { value: 'en-GB-LibbyNeural',   label: 'Libby (Female)' },
+            { value: 'en-GB-MaisieNeural',  label: 'Maisie (Female)' },
+            { value: 'en-GB-RyanNeural',    label: 'Ryan (Male)' },
+            { value: 'en-GB-SoniaNeural',   label: 'Sonia (Female)' },
+            { value: 'en-GB-ThomasNeural',  label: 'Thomas (Male)' },
+        ],
+        'en-AU': [
+            { value: 'en-AU-NatashaNeural', label: 'Natasha (Female)' },
+            { value: 'en-AU-WilliamNeural', label: 'William (Male)' },
+        ],
+        'en-CA': [
+            { value: 'en-CA-ClaraNeural', label: 'Clara (Female)' },
+            { value: 'en-CA-LiamNeural', label: 'Liam (Male)' },
+        ],
+        'en-IN': [
+            { value: 'en-IN-NeerjaNeural', label: 'Neerja (Female)' },
+            { value: 'en-IN-PrabhatNeural', label: 'Prabhat (Male)' },
+        ],
+        'ja-JP': [
+            { value: 'ja-JP-NanamiNeural',  label: 'Nanami (Female)' },
+            { value: 'ja-JP-KeitaNeural',   label: 'Keita (Male)' },
+            { value: 'ja-JP-AoiNeural', label: 'Aoi (Female)' },
+            { value: 'ja-JP-DaichiNeural', label: 'Daichi (Male)' },
+            { value: 'ja-JP-MayuNeural', label: 'Mayu (Female)' },
+            { value: 'ja-JP-NaokiNeural', label: 'Naoki (Male)' },
+            { value: 'ja-JP-ShioriNeural', label: 'Shiori (Female)' },
+        ],
+        'ko-KR': [
+            { value: 'ko-KR-SunHiNeural', label: 'Sun-Hi (Female)' },
+            { value: 'ko-KR-InJoonNeural', label: 'InJoon (Male)' },
+            { value: 'ko-KR-HyunsuNeural', label: 'Hyunsu (Male)' },
+            { value: 'ko-KR-SoonBokNeural', label: 'SoonBok (Female)' },
+        ],
+        'es-ES': [
+            { value: 'es-ES-ElviraNeural', label: 'Elvira (Female)' },
+            { value: 'es-ES-AlvaroNeural', label: 'Alvaro (Male)' },
+            { value: 'es-ES-AbrilNeural', label: 'Abril (Female)' },
+            { value: 'es-ES-ArnauNeural', label: 'Arnau (Male)' },
+            { value: 'es-ES-DarioNeural', label: 'Dario (Male)' },
+            { value: 'es-ES-EliasNeural', label: 'Elias (Male)' },
+            { value: 'es-ES-EstrellaNeural', label: 'Estrella (Female)' },
+            { value: 'es-ES-IreneNeural', label: 'Irene (Female)' },
+            { value: 'es-ES-LauraNeural', label: 'Laura (Female)' },
+            { value: 'es-ES-LiaNeural', label: 'Lia (Female)' },
+        ],
+        'es-MX': [
+            { value: 'es-MX-DaliaNeural', label: 'Dalia (Female)' },
+            { value: 'es-MX-JorgeNeural', label: 'Jorge (Male)' },
+            { value: 'es-MX-BeatrizNeural', label: 'Beatriz (Female)' },
+            { value: 'es-MX-CandelaNeural', label: 'Candela (Female)' },
+            { value: 'es-MX-CarlotaNeural', label: 'Carlota (Female)' },
+            { value: 'es-MX-CecilioNeural', label: 'Cecilio (Male)' },
+            { value: 'es-MX-GerardoNeural', label: 'Gerardo (Male)' },
+            { value: 'es-MX-LarissaNeural', label: 'Larissa (Female)' },
+            { value: 'es-MX-LibertoNeural', label: 'Liberto (Male)' },
+            { value: 'es-MX-LucianoNeural', label: 'Luciano (Male)' },
+            { value: 'es-MX-MarinaNeural', label: 'Marina (Female)' },
+            { value: 'es-MX-NuriaNeural', label: 'Nuria (Female)' },
+            { value: 'es-MX-PelayoNeural', label: 'Pelayo (Male)' },
+            { value: 'es-MX-RenataNeural', label: 'Renata (Female)' },
+            { value: 'es-MX-YagoNeural', label: 'Yago (Male)' },
+        ],
+        'fr-FR': [
+            { value: 'fr-FR-VivienneMultilingualNeural', label: 'Vivienne (Female)' },
+            { value: 'fr-FR-RemyMultilingualNeural', label: 'Remy (Male)' },
+            { value: 'fr-FR-DeniseNeural', label: 'Denise (Female)' },
+            { value: 'fr-FR-EloiseNeural', label: 'Eloise (Female)' },
+            { value: 'fr-FR-HenriNeural', label: 'Henri (Male)' },
+        ],
+        'fr-CA': [
+            { value: 'fr-CA-SylvieNeural', label: 'Sylvie (Female)' },
+            { value: 'fr-CA-AntoineNeural', label: 'Antoine (Male)' },
+            { value: 'fr-CA-JeanNeural', label: 'Jean (Male)' },
+        ],
+        'de-DE': [
+            { value: 'de-DE-SeraphinaMultilingualNeural', label: 'Seraphina (Female)' },
+            { value: 'de-DE-FlorianMultilingualNeural', label: 'Florian (Male)' },
+            { value: 'de-DE-AmalaNeural', label: 'Amala (Female)' },
+            { value: 'de-DE-ConradNeural', label: 'Conrad (Male)' },
+            { value: 'de-DE-KatjaNeural', label: 'Katja (Female)' },
+            { value: 'de-DE-KillianNeural', label: 'Killian (Male)' },
+            { value: 'de-DE-BerndNeural', label: 'Bernd (Male)' },
+            { value: 'de-DE-ChristophNeural', label: 'Christoph (Male)' },
+            { value: 'de-DE-ElkeNeural', label: 'Elke (Female)' },
+            { value: 'de-DE-GiselaNeural', label: 'Gisela (Female)' },
+            { value: 'de-DE-KasperNeural', label: 'Kasper (Male)' },
+            { value: 'de-DE-KlarissaNeural', label: 'Klarissa (Female)' },
+            { value: 'de-DE-KlausNeural', label: 'Klaus (Male)' },
+            { value: 'de-DE-LouisaNeural', label: 'Louisa (Female)' },
+            { value: 'de-DE-MajaNeural', label: 'Maja (Female)' },
+            { value: 'de-DE-RalfNeural', label: 'Ralf (Male)' },
+            { value: 'de-DE-TanjaNeural', label: 'Tanja (Female)' },
+        ],
+        'it-IT': [
+            { value: 'it-IT-GiuseppeMultilingualNeural', label: 'Giuseppe (Male)' },
+            { value: 'it-IT-DiegoNeural', label: 'Diego (Male)' },
+            { value: 'it-IT-ElsaNeural', label: 'Elsa (Female)' },
+            { value: 'it-IT-IsabellaNeural', label: 'Isabella (Female)' },
+            { value: 'it-IT-BenignoNeural', label: 'Benigno (Male)' },
+            { value: 'it-IT-CalimeroNeural', label: 'Calimero (Male)' },
+            { value: 'it-IT-CataldoNeural', label: 'Cataldo (Male)' },
+            { value: 'it-IT-FabiolaNeural', label: 'Fabiola (Female)' },
+            { value: 'it-IT-FiammaNeural', label: 'Fiamma (Female)' },
+            { value: 'it-IT-GianniNeural', label: 'Gianni (Male)' },
+            { value: 'it-IT-ImeldaNeural', label: 'Imelda (Female)' },
+            { value: 'it-IT-IrmaNeural', label: 'Irma (Female)' },
+            { value: 'it-IT-LisandroNeural', label: 'Lisandro (Male)' },
+            { value: 'it-IT-PalmiraNeural', label: 'Palmira (Female)' },
+            { value: 'it-IT-PierinaNeural', label: 'Pierina (Female)' },
+            { value: 'it-IT-RinaldoNeural', label: 'Rinaldo (Male)' },
+        ],
+        'pt-BR': [
+            { value: 'pt-BR-ThalitaMultilingualNeural', label: 'Thalita (Female)' },
+            { value: 'pt-BR-AntonioNeural', label: 'Antonio (Male)' },
+            { value: 'pt-BR-FranciscaNeural', label: 'Francisca (Female)' },
+            { value: 'pt-BR-BrendaNeural', label: 'Brenda (Female)' },
+            { value: 'pt-BR-DonatoNeural', label: 'Donato (Male)' },
+            { value: 'pt-BR-ElzaNeural', label: 'Elza (Female)' },
+            { value: 'pt-BR-FabioNeural', label: 'Fabio (Male)' },
+            { value: 'pt-BR-GiovannaNeural', label: 'Giovanna (Female)' },
+            { value: 'pt-BR-HumbertoNeural', label: 'Humberto (Male)' },
+            { value: 'pt-BR-JulioNeural', label: 'Julio (Male)' },
+            { value: 'pt-BR-LeilaNeural', label: 'Leila (Female)' },
+            { value: 'pt-BR-LeticiaNeural', label: 'Leticia (Female)' },
+            { value: 'pt-BR-ManuelaNeural', label: 'Manuela (Female)' },
+            { value: 'pt-BR-NicolauNeural', label: 'Nicolau (Male)' },
+            { value: 'pt-BR-ValerioNeural', label: 'Valerio (Male)' },
+            { value: 'pt-BR-YaraNeural', label: 'Yara (Female)' },
+        ],
+        'pt-PT': [
+            { value: 'pt-PT-RaquelNeural', label: 'Raquel (Female)' },
+            { value: 'pt-PT-DuarteNeural', label: 'Duarte (Male)' },
+        ],
+    };
+
+    // 当前使用的语音列表（根据引擎动态切换）
+    let currentVoicesByLanguage = azureVoicesByLanguage;
+    
+    // 检测当前应该使用哪个 TTS 引擎
+    // 根据 Azure API Key 的有效性决定：
+    // - API Key 有效 → 显示 Azure 语音列表（完整高级语音）
+    // - API Key 无效/不存在 → 显示 Edge 语音列表（基础语音）
+    async function detectTTSEngine() {
+        try {
+            const settings = await invoke('get_settings_command');
+            const apiKey = settings.api_key || '';
+            const region = settings.region || 'eastus';
+            
+            // 验证 Azure API Key 是否有效
+            let isAzureValid = false;
+            if (apiKey) {
+                try {
+                    isAzureValid = await invoke('validate_azure_api_key', { 
+                        apiKey: apiKey, 
+                        region: region 
+                    });
+                } catch (e) {
+                    console.log('API Key validation error:', e);
+                    isAzureValid = false;
+                }
+            }
+            
+            // 根据 API Key 有效性切换语音列表
+            if (isAzureValid) {
+                console.log('Azure API Key is valid, using Azure voice list');
+                currentVoicesByLanguage = azureVoicesByLanguage;
+                return 'azure';
+            } else {
+                console.log('Azure API Key is invalid or not set, using Edge voice list');
+                currentVoicesByLanguage = edgeVoicesByLanguage;
+                return 'edge';
+            }
+        } catch (e) {
+            console.log('Failed to detect TTS engine, defaulting to Edge');
+            currentVoicesByLanguage = edgeVoicesByLanguage;
+            return 'edge';
+        }
+    }
+
+    // 根据 Azure TTS 可用性显示/隐藏 SSML 控制按钮
+    // 只有 Azure TTS 支持 SSML 标签，Edge TTS 不支持
+    async function updateSSMLControlsVisibility() {
+        const rateControlsWrapper = document.getElementById('rate-controls-wrapper');
+        const rateLabel = rateControlsWrapper.querySelector('label');
+        const rateSlider = document.getElementById('rate-slider');
+        const rateDisplay = document.getElementById('rate-display');
+        const btnRate = document.getElementById('btn-rate');
+        const pauseLabel = rateControlsWrapper.querySelector('span.text-\\[16px\\]');
+        const btnPause05 = document.getElementById('btn-pause-05');
+        const btnPause1 = document.getElementById('btn-pause-1');
+
+        try {
+            const settings = await invoke('get_settings_command');
+            const apiKey = settings.api_key || '';
+            const useAzure = settings.use_azure !== false; // 默认 true
+
+            // 检查 Azure 是否可用（需要 API Key 且开关开启）
+            let isAzureAvailable = false;
+            if (useAzure && apiKey) {
+                try {
+                    isAzureAvailable = await invoke('validate_azure_api_key', {
+                        apiKey: apiKey,
+                        region: settings.region || 'eastus'
+                    });
+                } catch (e) {
+                    isAzureAvailable = false;
+                }
+            }
+
+            if (isAzureAvailable) {
+                // Azure 可用，显示 SSML 控制
+                rateLabel.classList.remove('hidden', 'opacity-30');
+                rateSlider.classList.remove('hidden', 'opacity-30');
+                rateSlider.disabled = false;
+                rateDisplay.classList.remove('hidden', 'opacity-30');
+                btnRate.classList.remove('hidden', 'opacity-50');
+                btnRate.disabled = false;
+                if (pauseLabel) {
+                    pauseLabel.classList.remove('hidden', 'opacity-30');
+                }
+                btnPause05.classList.remove('hidden', 'opacity-50');
+                btnPause05.disabled = false;
+                btnPause1.classList.remove('hidden', 'opacity-50');
+                btnPause1.disabled = false;
+            } else {
+                // Azure 不可用（只有 Edge TTS），隐藏 SSML 控制
+                rateLabel.classList.add('opacity-30');
+                rateSlider.classList.add('opacity-30');
+                rateSlider.disabled = true;
+                rateDisplay.classList.add('opacity-30');
+                btnRate.classList.add('opacity-50');
+                btnRate.disabled = true;
+                if (pauseLabel) {
+                    pauseLabel.classList.add('opacity-30');
+                }
+                btnPause05.classList.add('opacity-50');
+                btnPause05.disabled = true;
+                btnPause1.classList.add('opacity-50');
+                btnPause1.disabled = true;
+            }
+        } catch (e) {
+            console.log('Failed to update SSML controls visibility:', e);
+        }
+    }
+
+    // 更新语音列表显示
+    function updateVoiceList(lang) {
+        const voices = currentVoicesByLanguage[lang] || [];
+        voiceSelect.innerHTML = voices.map(v => 
+            `<option value="${v.value}">${v.label}</option>`
+        ).join('');
+    }
+
+    const textarea = document.getElementById('tts-input');
+    const charCount = document.getElementById('char-count');
+    const playBtn = document.getElementById('btn-play');
+    const languageSelect = document.getElementById('language-select');
+    const voiceSelect = document.getElementById('voice-select');
+    const saveBtn = document.getElementById('btn-save');
+    const savePathDisplay = document.getElementById('save-path-display');
+
+    // 从localStorage读取保存路径
+    let savePath = localStorage.getItem('greader_save_path') || '';
+
+    // 更新保存路径显示
+    function updateSavePathDisplay() {
+        if (savePath) {
+            savePathDisplay.textContent = savePath;
+            savePathDisplay.classList.remove('text-gray-500');
+            savePathDisplay.classList.add('text-neonGreen');
+        } else {
+            savePathDisplay.textContent = 'Not set';
+            savePathDisplay.classList.remove('text-neonGreen');
+            savePathDisplay.classList.add('text-gray-500');
+        }
+    }
+
+    // 页面加载时更新显示
+    updateSavePathDisplay();
+
+    // 检测系统语言并自动匹配支持的语音语言
+    function detectAndSelectSystemLanguage() {
+        const sysLang = navigator.language || 'zh-CN';
+        console.log('System language detected:', sysLang);
+
+        // 支持的语言列表
+        const supportedLanguages = [
+            'zh-CN', 'zh-TW', 'zh-HK',
+            'en-US', 'en-GB', 'en-AU', 'en-CA', 'en-IN',
+            'ja-JP', 'ko-KR',
+            'es-ES', 'es-MX',
+            'fr-FR', 'fr-CA',
+            'de-DE', 'it-IT',
+            'pt-BR', 'pt-PT'
+        ];
+
+        // 常见语言变体映射到支持的语言
+        const langMap = {
+            'zh': 'zh-CN', 'zh-Hans': 'zh-CN', 'zh-SG': 'zh-CN',
+            'en': 'en-US',
+            'ja': 'ja-JP',
+            'ko': 'ko-KR',
+            'es': 'es-ES',
+            'fr': 'fr-FR',
+            'de': 'de-DE',
+            'it': 'it-IT',
+            'pt': 'pt-BR'
+        };
+
+        let matchedLang = null;
+
+        // 精确匹配
+        if (supportedLanguages.includes(sysLang)) {
+            matchedLang = sysLang;
+        }
+        // 前缀匹配 (如 zh-CN → zh-CN)
+        else if (supportedLanguages.some(l => sysLang.startsWith(l + '-'))) {
+            matchedLang = supportedLanguages.find(l => sysLang.startsWith(l + '-'));
+        }
+        // 基础语言映射 (如 zh → zh-CN)
+        else {
+            const base = sysLang.split('-')[0];
+            matchedLang = langMap[base] || 'zh-CN';
+        }
+
+        // 查找 select 中对应的 option 并选中
+        const options = languageSelect.querySelectorAll('option');
+        for (const opt of options) {
+            if (opt.value === matchedLang) {
+                languageSelect.value = matchedLang;
+                console.log(`Language auto-selected: ${matchedLang} (matched from system: ${sysLang})`);
+                break;
+            }
+        }
+    }
+
+    // 页面加载时检测 TTS 引擎并初始化语音列表
+    (async function init() {
+        const engine = await detectTTSEngine();
+        console.log(`TTS Engine: ${engine}`);
+        detectAndSelectSystemLanguage();
+        updateVoiceList(languageSelect.value);
+
+        // 根据 Azure TTS 可用性更新 SSML 控制按钮状态
+        await updateSSMLControlsVisibility();
+    })();
+
+    // 主窗口获得焦点时，刷新 SSML 控件状态（设置页关闭后会触发）
+    window.addEventListener('focus', async () => {
+        await updateSSMLControlsVisibility();
+    });
+
+    // Update voices when language changes
+    languageSelect.addEventListener('change', (e) => {
+        updateVoiceList(e.target.value);
+    });
+
+    // Update character count
+    textarea.addEventListener('input', (e) => {
+      charCount.textContent = `${e.target.value.length} chars`;
+    });
+
+    // Save To button - 设置保存路径
+    saveBtn.addEventListener('click', async () => {
+        try {
+            const { open } = window.__TAURI__.dialog;
+            const result = await open({
+                title: 'Select Save Folder',
+                directory: true
+            });
+            if (result) {
+                savePath = result;
+                localStorage.setItem('greader_save_path', savePath);
+                updateSavePathDisplay();
+                console.log('Save path set to:', savePath);
+                saveBtn.querySelector('span').textContent = 'SAVED';
+                setTimeout(() => {
+                    saveBtn.querySelector('span').textContent = 'Save To';
+                }, 1500);
+            }
+        } catch (e) {
+            console.error('Save dialog error:', e);
+        }
+    });
+
+    // Open button - 打开文本文件
+    document.getElementById('btn-open').addEventListener('click', async () => {
+        try {
+            const { open } = window.__TAURI__.dialog;
+            const result = await open({
+                title: 'Open Text File',
+                multiple: false,
+                filters: [{
+                    name: 'Text Files',
+                    extensions: ['txt', 'md', 'json', 'html', 'htm', 'xml', 'csv', 'log', 'srt', 'ass', 'ssa', 'vtt']
+                }, {
+                    name: 'PDF Files',
+                    extensions: ['pdf']
+                }, {
+                    name: 'All Files',
+                    extensions: ['*']
+                }]
+            });
+            if (result) {
+                console.log('Selected file:', result);
+                const ext = result.toLowerCase().split('.').pop();
+                try {
+                    if (ext === 'pdf') {
+                        // PDF 文件：调用后端提取文本
+                        const { invoke } = window.__TAURI__.core;
+                        const text = await invoke('extract_pdf_text', { path: result });
+                        textarea.value = text;
+                        textarea.dispatchEvent(new Event('input'));
+                        console.log('PDF loaded successfully');
+                    } else {
+                        // 文本文件：使用 Tauri fs API 读取
+                        const { readTextFile } = window.__TAURI__.fs;
+                        const text = await readTextFile(result);
+                        textarea.value = text;
+                        textarea.dispatchEvent(new Event('input'));
+                        console.log('File loaded successfully');
+                    }
+                } catch (err) {
+                    console.error('Failed to read file:', err);
+                    alert('Failed to read file: ' + err.message);
+                }
+            }
+        } catch (e) {
+            console.error('Open dialog error:', e);
+        }
+    });
+
+    // SSML 快捷按钮 - 在光标位置插入符号
+    function insertAtCursor(text) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const before = textarea.value.substring(0, start);
+        const after = textarea.value.substring(end);
+        textarea.value = before + text + after;
+        // 设置光标位置到插入文本之后
+        textarea.selectionStart = textarea.selectionEnd = start + text.length;
+        textarea.focus();
+        textarea.dispatchEvent(new Event('input'));
+    }
+
+    function wrapSelection(prefix, suffix) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        if (start === end) {
+            alert('请先选中要放慢的文字');
+            return;
+        }
+        const selectedText = textarea.value.substring(start, end);
+        const before = textarea.value.substring(0, start);
+        const after = textarea.value.substring(end);
+        textarea.value = before + prefix + selectedText + suffix + after;
+        textarea.focus();
+        textarea.dispatchEvent(new Event('input'));
+    }
+
+    // 停顿0.5秒
+    document.getElementById('btn-pause-05').addEventListener('click', () => {
+        insertAtCursor('[[slnc 500]]');
+    });
+
+    // 停顿1秒
+    document.getElementById('btn-pause-1').addEventListener('click', () => {
+        insertAtCursor('[[slnc 1000]]');
+    });
+
+    // 语速滑块（用于选中文字后应用）
+    const rateSlider = document.getElementById('rate-slider');
+    const rateDisplay = document.getElementById('rate-display');
+    rateSlider.addEventListener('input', (e) => {
+        rateDisplay.textContent = parseFloat(e.target.value).toFixed(1) + 'x';
+    });
+    document.getElementById('btn-rate').addEventListener('click', () => {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        if (start === end) {
+            alert('Please select text first');
+            return;
+        }
+        const rate = rateSlider.value;
+        wrapSelection(`[[rate ${rate}]]`, '[[/rate]]');
+    });
+
+    // ===== Audio Player =====
+    let currentAudioPath = null;
+    let audio = new Audio();
+    let isPlaying = false;
+    let isPreviewMode = false;
+
+    // Vertical volume slider
+    const volSliderVertical = document.getElementById('vol-slider-vertical');
+    const volDisplayVertical = document.getElementById('vol-display-vertical');
+    volSliderVertical.addEventListener('input', (e) => {
+        const vol = e.target.value / 100;
+        audio.volume = vol;
+        volDisplayVertical.textContent = e.target.value + '%';
+    });
+    audio.volume = 1.0;
+
+    // Play/Pause button
+    const btnPlayerPlay = document.getElementById('btn-player-play');
+    const iconPlay = document.getElementById('icon-play');
+    const iconPause = document.getElementById('icon-pause');
+
+    btnPlayerPlay.addEventListener('click', async () => {
+        if (!currentAudioPath) {
+            // 无音频文件时，播放试听
+            try {
+                const settings = await invoke('get_settings_command');
+                const apiKey = settings.api_key || '';
+                const region = settings.region || 'eastus';
+                const useEdge = settings.use_edge === true || settings.use_edge == null;
+                const voice = voiceSelect.value;
+
+                const dataUrl = await invoke('preview_voice', {
+                    voice: voice,
+                    useEdge: useEdge,
+                    apiKey: apiKey,
+                    region: region
+                });
+
+                currentAudioPath = 'preview';
+                isPreviewMode = true;
+                audio.src = dataUrl;
+                audio.play();
+            } catch (e) {
+                console.error('Preview failed:', e);
+                alert('预览失败: ' + e);
+            }
+            return;
+        }
+
+        if (isPlaying) {
+            audio.pause();
+        } else {
+            audio.play();
+        }
+    });
+
+    audio.addEventListener('play', () => {
+        isPlaying = true;
+        iconPlay.classList.add('hidden');
+        iconPause.classList.remove('hidden');
+    });
+
+    audio.addEventListener('pause', () => {
+        isPlaying = false;
+        iconPlay.classList.remove('hidden');
+        iconPause.classList.add('hidden');
+    });
+
+    audio.addEventListener('ended', () => {
+        isPlaying = false;
+        isPreviewMode = false;
+        currentAudioPath = null;
+        iconPlay.classList.remove('hidden');
+        iconPause.classList.add('hidden');
+        document.getElementById('player-progress').style.width = '0%';
+        document.getElementById('player-progress-handle').style.left = '0%';
+        document.getElementById('player-current-time').textContent = '0:00';
+    });
+
+    // Stop button
+    document.getElementById('btn-player-stop').addEventListener('click', () => {
+        audio.pause();
+        audio.currentTime = 0;
+        isPlaying = false;
+        isPreviewMode = false;
+        currentAudioPath = null;
+        iconPlay.classList.remove('hidden');
+        iconPause.classList.add('hidden');
+        document.getElementById('player-progress').style.width = '0%';
+        document.getElementById('player-progress-handle').style.left = '0%';
+        document.getElementById('player-current-time').textContent = '0:00';
+    });
+
+    // Open Audio button
+    document.getElementById('btn-open-audio').addEventListener('click', async () => {
+        try {
+            // 如果正在播放预览，先停止
+            if (isPlaying || isPreviewMode) {
+                audio.pause();
+                audio.currentTime = 0;
+                isPlaying = false;
+                isPreviewMode = false;
+                currentAudioPath = null;
+                iconPlay.classList.remove('hidden');
+                iconPause.classList.add('hidden');
+                document.getElementById('player-progress').style.width = '0%';
+                document.getElementById('player-progress-handle').style.left = '0%';
+                document.getElementById('player-current-time').textContent = '0:00';
+            }
+
+            const { open } = window.__TAURI__.dialog;
+            const selected = await open({
+                multiple: false,
+                filters: [{
+                    name: 'Audio',
+                    extensions: ['wav', 'mp3', 'ogg', 'm4a', 'flac', 'aac']
+                }]
+            });
+            if (selected) {
+                // Use backend command to read audio file as base64 data URL
+                const dataUrl = await invoke('read_audio_file', { path: selected });
+                currentAudioPath = selected;
+                audio.src = dataUrl;
+                const fileName = selected.split(/[/\\]/).pop();
+                document.getElementById('player-file-name').textContent = fileName;
+                document.getElementById('player-file-name').title = selected;
+                console.log('Audio loaded:', fileName);
+            }
+        } catch (err) {
+            console.error('Failed to open audio:', err);
+        }
+    });
+
+    // Progress bar
+    const playerProgress = document.getElementById('player-progress');
+    const playerProgressHandle = document.getElementById('player-progress-handle');
+    const playerProgressBar = document.getElementById('player-progress-bar');
+    const playerCurrentTime = document.getElementById('player-current-time');
+    const playerRemainingTime = document.getElementById('player-remaining-time');
+
+    audio.addEventListener('timeupdate', () => {
+        if (audio.duration === 0 || isNaN(audio.duration)) return;
+        const progress = (audio.currentTime / audio.duration) * 100;
+        playerProgress.style.width = progress + '%';
+        playerProgressHandle.style.left = progress + '%';
+        playerCurrentTime.textContent = formatTime(audio.currentTime);
+        playerRemainingTime.textContent = '-' + formatTime(audio.duration - audio.currentTime);
+    });
+
+    function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Click on progress bar to seek
+    playerProgressBar.addEventListener('click', (e) => {
+        if (!currentAudioPath || audio.duration === 0) return;
+        const rect = playerProgressBar.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = percent * audio.duration;
+    });
+
+    // Execute button - generate speech
+    playBtn.addEventListener('click', async () => {
+      // 检查是否设置了保存路径
+      if (!savePath) {
+        playBtn.querySelector('span').textContent = 'SET PATH FIRST';
+        playBtn.classList.add('animate-pulse');
+        setTimeout(() => {
+            playBtn.querySelector('span').textContent = 'Execute';
+            playBtn.classList.remove('animate-pulse');
+        }, 2000);
+        return;
+      }
+
+      if(textarea.value.trim() === "") {
+        textarea.classList.add('border-red-500/50');
+        setTimeout(() => textarea.classList.remove('border-red-500/50'), 1000);
+        return;
+      }
+      
+      const span = playBtn.querySelector('span');
+      const originalText = span.textContent;
+      span.textContent = 'SYNTHESIZING...';
+      playBtn.classList.add('animate-pulse');
+      
+      try {
+        const text = textarea.value;
+        const voice = voiceSelect.value;
+        const velocity = 1.0; // 全局语速固定为1.0
+
+         const result = await invoke('generate_speech', {
+            text: text,
+            filename: `output_${Date.now()}`,
+            voice: voice,
+            velocity: velocity,
+            savePath: savePath
+        });
+        
+        if (result.success) {
+            span.textContent = 'SUCCESS';
+            trackEvent('execute_click');
+            // 显示文件保存路径，加载到播放器
+            if (result.path) {
+                const fileName = result.path.split(/[/\\]/).pop();
+                console.log('File saved:', result.path);
+                // 使用后端命令加载音频到播放器
+                try {
+                    const dataUrl = await invoke('read_audio_file', { path: result.path });
+                    currentAudioPath = result.path;
+                    audio.src = dataUrl;
+                    document.getElementById('player-file-name').textContent = fileName;
+                    document.getElementById('player-file-name').title = result.path;
+                } catch (e) {
+                    console.error('Failed to load audio:', e);
+                }
+            }
+        } else {
+            span.textContent = 'FAILED';
+            console.error('TTS Error:', result.message);
+            // 显示错误提示
+            const errorMsg = result.message || 'Unknown error';
+            if (errorMsg.includes('Azure') && errorMsg.includes('Edge')) {
+                alert('TTS Failed: Both Azure and Edge TTS failed. Please check your settings.');
+            } else if (errorMsg.includes('file') || errorMsg.includes('path')) {
+                alert('TTS Failed: ' + errorMsg);
+            }
+        }
+      } catch (e) {
+        span.textContent = 'ERROR';
+        console.error('Invoke error:', e);
+        alert('System Error: ' + e);
+      }
+      
+      setTimeout(() => {
+        span.textContent = originalText;
+        playBtn.classList.remove('animate-pulse');
+      }, 2000);
+    });
+
+    // 拖拽文本文件到 Input Buffer - 使用 HTML5 原生 drag events
+    // 在 document 级别阻止默认行为，允许 drop
+    document.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+
+    document.addEventListener('drop', (e) => {
+        e.preventDefault();
+    });
+
+    // 事件加在 textarea 的父容器上，确保能捕获到
+    const textareaContainer = textarea.parentElement;
+
+    textareaContainer.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        textarea.classList.add('border-neonGreen');
+        textarea.style.borderColor = '#00FF00';
+    });
+
+    textareaContainer.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        textarea.style.borderColor = '#00FF00';
+    });
+
+    textareaContainer.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // 只有当鼠标真正离开 textarea 时才清除边框
+        if (!textarea.contains(e.relatedTarget)) {
+            textarea.style.borderColor = '';
+        }
+    });
+
+    textareaContainer.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        textarea.style.borderColor = '';
+
+        const files = e.dataTransfer.files;
+        if (files.length === 0) return;
+
+        const file = files[0];
+        const fileName = file.name;
+        const ext = fileName.toLowerCase().split('.').pop();
+        console.log('Dropped file:', fileName, 'ext:', ext);
+
+        try {
+            if (ext === 'pdf') {
+                // PDF 文件：调用后端提取文本
+                const filePath = file.path;
+                console.log('PDF file path:', filePath);
+                if (filePath) {
+                    const { invoke } = window.__TAURI__.core;
+                    const text = await invoke('extract_pdf_text', { path: filePath });
+                    textarea.value = text;
+                    textarea.dispatchEvent(new Event('input'));
+                    console.log('PDF loaded successfully');
+                } else {
+                    alert('Could not get file path. Try using the Open button instead.');
+                }
+            } else {
+                // 文本文件：使用 HTML5 File API 直接读取
+                const text = await file.text();
+                textarea.value = text;
+                textarea.dispatchEvent(new Event('input'));
+                console.log('File loaded successfully');
+            }
+        } catch (err) {
+            console.error('Failed to read file:', err);
+            alert('Failed to read file: ' + err.message);
+        }
+    });
+
+    // 当窗口重新获得焦点时，重新检测 TTS 引擎（用户可能在设置中更改了 API Key）
+    window.addEventListener('focus', async () => {
+        const previousEngine = currentVoicesByLanguage === azureVoicesByLanguage ? 'azure' : 'edge';
+        const newEngine = await detectTTSEngine();
+
+        // 如果引擎发生变化，更新语音列表
+        if (previousEngine !== newEngine) {
+            console.log(`TTS Engine changed: ${previousEngine} -> ${newEngine}`);
+            const currentLang = languageSelect.value;
+            updateVoiceList(currentLang);
+
+            // Edge TTS 不支持 SSML 标签，切换时显示/隐藏 Rate 控件
+            const rateControlsWrapper = document.getElementById('rate-controls-wrapper');
+            rateControlsWrapper.style.display = newEngine === 'azure' ? '' : 'none';
+        }
+    });
+
+    // Window controls
+    (function initWindowControls() {
+        try {
+            const { getCurrentWindow } = window.__TAURI__.window;
+            
+            document.getElementById('btn-minimize').addEventListener('click', async () => {
+                await getCurrentWindow().minimize();
+            });
+            
+            document.getElementById('btn-maximize').addEventListener('click', async () => {
+                const win = getCurrentWindow();
+                if (await win.isMaximized()) {
+                    await win.unmaximize();
+                } else {
+                    await win.maximize();
+                }
+            });
+            
+            document.getElementById('btn-close').addEventListener('click', async () => {
+                await getCurrentWindow().close();
+            });
+        } catch(e) {
+            console.error('Window controls error:', e);
+        }
+    })();
+
+    // Settings button - 直接调用后端命令打开设置窗口，无需任何 JS 窗口 API
+    document.getElementById('btn-settings').onclick = async function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+            await invoke('open_settings_window');
+        } catch (err) {
+            console.error('Failed to open settings:', err);
+        }
+    };
+
+    // ===== Privacy Modal =====
+    const privacyModal = document.getElementById('privacy-modal');
+    const btnPrivacyAgree = document.getElementById('btn-privacy-agree');
+    const btnPrivacyDisagree = document.getElementById('btn-privacy-disagree');
+
+    // 检查是否已同意
+    const privacyAgreed = localStorage.getItem('greader_privacy_agreed');
+    if (!privacyAgreed) {
+        privacyModal.classList.remove('hidden');
+
+        btnPrivacyAgree.addEventListener('click', () => {
+            localStorage.setItem('greader_privacy_agreed', '1');
+            privacyModal.classList.add('hidden');
+            // 同意后启动 Analytics
+            initAnalytics();
+        });
+
+        btnPrivacyDisagree.addEventListener('click', async () => {
+            // 关闭窗口
+            try {
+                const { getCurrentWindow } = window.__TAURI__.window;
+                await getCurrentWindow().close();
+            } catch (e) {
+                window.close();
+            }
+        });
+    } else {
+        // 已同意，直接启动 Analytics
+        initAnalytics();
+    }
+
+    // Analytics 全局变量
+    const ANALYTICS_URL = 'https://ufmiicmptrvfkffojeyq.supabase.co/rest/v1/analytics_events';
+    const ANALYTICS_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVmbWlpY21wdHJ2ZmtmZm9qZXlxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTI0MzA0NiwiZXhwIjoyMDkwODE5MDQ2fQ.q1UKkmk0N4CaDTkoe6wwCKwpi9GP_TlKZBAoHemhj2A';
+
+    // 生成或读取匿名设备ID
+    function getDeviceId() {
+        let deviceId = localStorage.getItem('greader_device_id');
+        if (!deviceId) {
+            deviceId = 'd_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem('greader_device_id', deviceId);
+        }
+        return deviceId;
+    }
+
+    // 如果两个都禁用了，默认启用 Edge TTS（保底逻辑）
+    if (!settings.use_edge && !settings.use_azure) {
+        settings.use_edge = true;
+    }
+
+    // 发送分析事件
+    function trackEvent(eventType) {
+        try {
+            const payload = {
+                event_type: eventType,
+                event_data: {},
+                device_id: getDeviceId()
+            };
+            fetch(ANALYTICS_URL, {
+                method: 'POST',
+                headers: {
+                    'apikey': ANALYTICS_KEY,
+                    'Authorization': 'Bearer ' + ANALYTICS_KEY,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify(payload)
+            });
+        } catch (err) {
+            // silent fail
+        }
+    }
+
+    // Analytics 初始化函数
+    function initAnalytics() {
+    // 启动时发送
+    trackEvent('app_open');
+
+    // 记录会话开始时间
+    const sessionStartTime = Date.now();
+
+    // 窗口关闭时发送使用时长
+    window.addEventListener('beforeunload', () => {
+        const duration = Math.round((Date.now() - sessionStartTime) / 1000);
+        navigator.sendBeacon(ANALYTICS_URL, JSON.stringify({
+            event_type: 'session_end',
+            event_data: { duration: duration },
+            device_id: getDeviceId()
+        }));
+    });
+
+    // 播放按钮点击
+    document.getElementById('btn-player-play').addEventListener('click', () => {
+        trackEvent('play_click');
+    });
+    } // end initAnalytics
+
+    </script>
+</body></html>

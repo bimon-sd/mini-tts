@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>G-Reader — Text to Speech, Fast & Free</title>
+<meta name="description" content="G-Reader is a Windows TTS tool with Azure Neural Voices + Edge TTS. Zero setup, instant output. Download free.">
+<style>
+  :root {
+    --bg: #fafaf8;
+    --surface: #ffffff;
+    --border: #d4d2cd;
+    --text: #1a1918;
+    --text-dim: #6b6966;
+    --accent: #d97706;
+    --accent-dim: #b45309;
+    --accent-bright: #f59e0b;
+    --red: #ef4444;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: #fff; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 48px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+  }
+  .nav-logo svg { width: 22px; height: 22px; }
+  .nav-links { display: flex; gap: 28px; list-style: none; }
+  .nav-links a { color: var(--text-dim); font-size: 13px; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-cta {
+    background: var(--accent);
+    color: #000;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    padding: 8px 20px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+  }
+  .nav-cta:hover { background: #fff; color: #000; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 24px 40px;
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 40%, rgba(217,119,6,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(217,119,6,0.08);
+    border: 1px solid rgba(217,119,6,0.3);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 5px 14px;
+    border-radius: 999px;
+    margin-bottom: 32px;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-size: clamp(42px, 7vw, 80px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  .hero h1 .g { color: var(--accent); }
+  .hero p {
+    font-size: clamp(16px, 2vw, 20px);
+    color: var(--text-dim);
+    max-width: 560px;
+    margin-bottom: 40px;
+    font-weight: 400;
+  }
+  .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    padding: 14px 36px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .btn-primary:hover { background: #fff; transform: translateY(-1px); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 14px 28px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .hero-note {
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .hero-note span { color: var(--accent); font-weight: 600; }
+
+  /* ── SCREENSHOT ── */
+  .screenshot-wrap {
+    margin-top: 60px;
+    width: 100%;
+    position: relative;
+  }
+
+  /* ── DIVIDER ── */
+  .section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
+  .section-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .section h2 {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .section p.sub {
+    font-size: 17px;
+    color: var(--text-dim);
+    max-width: 540px;
+    margin-bottom: 48px;
+  }
+
+  /* ── FEATURES ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    transition: border-color 0.2s;
+  }
+  .feature-card:hover { border-color: rgba(217,119,6,0.35); }
+  .feature-icon {
+    width: 40px; height: 40px;
+    background: rgba(217,119,6,0.08);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    font-size: 18px;
+  }
+  .feature-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .feature-card p { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+
+  /* ── ENGINE COMPARE ── */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .compare-table th {
+    background: var(--surface);
+    padding: 16px 20px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-table th:nth-child(1) { width: 30%; }
+  .compare-table th:nth-child(2) { color: var(--orange); }
+  .compare-table th:nth-child(3) { color: var(--accent); }
+  .compare-table td {
+    padding: 16px 20px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.01); }
+  .compare-table .label { font-weight: 600; }
+  .compare-table .edge-col { color: var(--orange); font-weight: 600; }
+  .compare-table .azure-col { color: var(--accent); font-weight: 600; }
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+  .badge-free { background: rgba(255,123,0,0.15); color: var(--orange); border: 1px solid rgba(217,119,6,0.35); }
+  .badge-paid { background: rgba(217,119,6,0.08); color: var(--accent); border: 1px solid rgba(0,255,0,0.25); }
+
+  /* ── SCENES ── */
+  .scenes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .scene-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 20px;
+    transition: border-color 0.2s;
+  }
+  .scene-card:hover { border-color: rgba(217,119,6,0.35); }
+  .scene-card .scene-icon { font-size: 28px; margin-bottom: 12px; }
+  .scene-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .scene-card p { font-size: 12px; color: var(--text-dim); }
+
+  /* ── CTA ── */
+  .cta-section {
+    text-align: center;
+    padding: 120px 24px;
+    position: relative;
+  }
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 60%, rgba(217,119,6,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cta-section h2 {
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 900;
+    margin-bottom: 16px;
+  }
+  .cta-section p {
+    font-size: 18px;
+    color: var(--text-dim);
+    margin-bottom: 40px;
+  }
+  .cta-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .footer-logo { font-weight: 800; font-size: 14px; color: var(--accent); letter-spacing: 0.12em; }
+  .footer-copy { font-size: 12px; color: var(--text-dim); }
+  .footer-links { display: flex; gap: 24px; list-style: none; }
+  .footer-links a { font-size: 12px; color: var(--text-dim); }
+  .footer-links a:hover { color: var(--accent); }
+
+  /* ── QUOTES ── */
+  .quote {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .quote p { font-size: 14px; color: var(--text); margin-bottom: 6px; font-style: italic; }
+  .quote .author { font-size: 12px; color: var(--text-dim); font-style: normal; }
+
+  /* ── FREE TIER ── */
+  .free-tier {
+    background: var(--surface);
+    border: 1px solid rgba(217,119,6,0.25);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    margin-bottom: 60px;
+  }
+  .free-tier h3 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .free-tier .big-num {
+    font-size: 56px;
+    font-weight: 900;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    line-height: 1;
+    margin: 16px 0;
+  }
+  .free-tier p { color: var(--text-dim); font-size: 14px; }
+
+  /* ── HOW IT WORKS ── */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 32px;
+    margin-bottom: 60px;
+  }
+  .step { text-align: center; }
+  .step-num {
+    width: 40px; height: 40px;
+    background: rgba(217,119,6,0.08);
+    border: 1px solid rgba(0,255,65,0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--accent);
+    margin: 0 auto 16px;
+    font-family: var(--font-mono);
+  }
+  .step h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .step p { font-size: 13px; color: var(--text-dim); }
+
+  /* ── DISCLAIMER ── */
+  .disclaimer {
+    background: rgba(255,68,68,0.05);
+    border: 1px solid rgba(255,68,68,0.15);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 16px;
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 12px 20px; }
+    .nav-links { display: none; }
+    .section { padding: 60px 20px; }
+    footer { padding: 28px 20px; flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-logo">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+    </svg>
+    G-READER
+  </div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#engines">Engines</a></li>
+    <li><a href="#scenes">Use Cases</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.getElementById('download').scrollIntoView({behavior:'smooth'})">Download Free</button>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-badge">
+    <span>●</span> Free · No Account · No Setup
+  </div>
+  <h1>Turn Text Into <span class="g">Speech</span><br>In Seconds</h1>
+  <p>G-Reader converts text to natural-sounding audio using Azure Neural Voices or Edge TTS. Zero registration, instant output. Free to start.</p>
+  <div class="hero-actions">
+    <button class="btn-primary" id="download" onclick="document.getElementById('download-area').scrollIntoView({behavior:'smooth'})">
+      ↓ Download for Windows
+    </button>
+    <button class="btn-secondary" onclick="document.getElementById('engines').scrollIntoView({behavior:'smooth'})">
+      See How It Works
+    </button>
+  </div>
+  <p class="hero-note">
+    Windows 10/11 (64-bit) · <span>No Python required</span> · <span>No signup</span>
+  </p>
+
+  <div class="screenshot-wrap" style="display:flex;flex-direction:row;align-items:flex-end;justify-content:center;gap:24px;margin-top:60px;">
+    <div style="text-align:center;">
+      <img src="screenshot.png" style="max-width:calc(50vw - 48px);height:auto;display:block;">
+      <p style="font-size:12px;color:var(--text-dim);margin-top:10px;">Main Interface</p>
+    </div>
+    <div style="text-align:center;">
+      <img src="settings.png" style="max-width:calc(50vw - 48px);height:auto;display:block;">
+      <p style="font-size:12px;color:var(--text-dim);margin-top:10px;">Settings Panel</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="section">
+  <div style="text-align:center;margin-bottom:16px">
+    <span class="section-tag">How It Works</span>
+    <h2>Three steps. Done.</h2>
+    <p class="sub">No account. No API key. No waiting. Just type, pick a voice, and export.</p>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Paste Your Text</h3>
+      <p>Type or paste any text into the input buffer. Or drag & drop a .txt / .pdf file.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Pick a Voice</h3>
+      <p>Choose from 18 languages and 100+ neural voice profiles. Adjust speed and volume inline.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Export WAV</h3>
+      <p>Click Execute. Your audio file is saved instantly to your chosen folder.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── FREE TIER ── -->
+<section class="section" style="padding-top:0">
+  <div class="free-tier">
+    <h3>Azure TTS Free Tier</h3>
+    <div class="big-num">500K</div>
+    <p>characters per month &nbsp;·&nbsp; resets on the 1st of every month &nbsp;·&nbsp; no credit card charged</p>
+    <p style="margin-top:12px;font-size:13px;color:#666;">When your quota runs out, Azure simply pauses the service. <strong style="color:#888">No auto-charges. No surprise bills.</strong></p>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section class="section" id="features">
+  <span class="section-tag">Features</span>
+  <h2>Everything you need.<br>Nothing you don't.</h2>
+  <p class="sub">Built for speed and simplicity — without sacrificing the controls that matter.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <h3>18 Languages, 100+ Voices</h3>
+      <p>From Mandarin to Mexican Spanish — every major language covered. Male, female, and child voices available.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Instant Output</h3>
+      <p>Neural-quality audio generated in seconds. No cloud upload, no waiting in a processing queue.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎚️</div>
+      <h3>Inline Speed & Volume</h3>
+      <p>Select any portion of your text and apply a different speed or volume. Only Azure TTS supports this.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⏸</div>
+      <h3>Custom Pauses</h3>
+      <p>Insert 0.5s or 1s pauses anywhere in the text. Perfect for dramatic effect or natural pacing.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📄</div>
+      <h3>PDF Import</h3>
+      <p>Drag and drop a PDF file directly into G-Reader. Text is extracted automatically — no extra tools needed.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔗</div>
+      <h3>Auto Fallback</h3>
+      <p>If Edge TTS hits a rate limit, G-Reader automatically falls back to Azure TTS — if configured.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Character Counter</h3>
+      <p>Live character count in the input buffer so you always know how much you're synthesizing.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💾</div>
+      <h3>Custom Save Path</h3>
+      <p>Pick any folder for your output WAV files. The path is remembered between sessions.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── ENGINES ── -->
+<section class="section" id="engines">
+  <span class="section-tag">Voice Engines</span>
+  <h2>Two engines.<br>Pick your trade-off.</h2>
+  <p class="sub">Both are built into G-Reader. Switch between them anytime in Settings.</p>
+
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th><span class="badge badge-free">Free</span> Edge TTS</th>
+        <th><span class="badge badge-paid">High Quality</span> Azure Neural</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="label">Cost</td>
+        <td class="edge-col">Free, no account</td>
+        <td class="azure-col">Free tier: 500K chars/mo</td>
+      </tr>
+      <tr>
+        <td class="label">Quality</td>
+        <td>Good</td>
+        <td>Industry-leading neural</td>
+      </tr>
+      <tr>
+        <td class="label">Inline speed / volume control</td>
+        <td style="color:#555;">— not supported</td>
+        <td class="azure-col">✓ Full SSML support</td>
+      </tr>
+      <tr>
+        <td class="label">Custom pauses (0.5s / 1s)</td>
+        <td style="color:#555;">— not supported</td>
+        <td class="azure-col">✓</td>
+      </tr>
+      <tr>
+        <td class="label">Voice variety</td>
+        <td>Limited</td>
+        <td class="azure-col">100+ neural voices</td>
+      </tr>
+      <tr>
+        <td class="label">Stability</td>
+        <td>May be throttled by Microsoft</td>
+        <td class="azure-col">Always stable</td>
+      </tr>
+      <tr>
+        <td class="label">Best for</td>
+        <td>Quick tests, short clips</td>
+        <td class="azure-col">Audiobooks, bulk output</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="disclaimer">
+    <strong>Note on voice character:</strong> Azure Neural Voices are optimized for clarity and naturalness. Due to the nature of neural speech synthesis, tone and emotion expression are relatively flat — this is a known characteristic of all neural TTS engines, not a G-Reader limitation. For more expressive reads, try pairing inline speed control and pauses to add pacing variety.
+  </div>
+</section>
+
+<!-- ── SCENES ── -->
+<section class="section" id="scenes">
+  <span class="section-tag">Use Cases</span>
+  <h2>What G-Reader is made for</h2>
+  <p class="sub">From quick clips to full-length audiobooks — if there's text, G-Reader can speak it.</p>
+
+  <div class="scenes-grid">
+    <div class="scene-card">
+      <div class="scene-icon">📖</div>
+      <h3>Audiobook Production</h3>
+      <p>Batch-convert chapters into consistent, high-quality WAV files. Azure Neural handles long-form content reliably.</p>
+    </div>
+    <div class="scene-card">
+      <div class="scene-icon">📝</div>
+      <h3>Meeting Notes to Audio</h3>
+      <p>Convert written transcripts into voice recordings so you can listen back during your commute or workout.</p>
+    </div>
+    <div class="scene-card">
+      <div class="scene-icon">🎬</div>
+      <h3>Video Narration</h3>
+      <p>Generate voiceover drafts for YouTube videos, tutorials, or presentations without a microphone.</p>
+    </div>
+    <div class="scene-card">
+      <div class="scene-icon">🌍</div>
+      <h3>Language Learning</h3>
+      <p>Slow down any text to 0.5x speed to practise listening. Use different voices to hear pronunciation variety.</p>
+    </div>
+    <div class="scene-card">
+      <div class="scene-icon">♿</div>
+      <h3>Accessibility</h3>
+      <p>Turn articles, documents, or web content into audio for screen reader alternatives.</p>
+    </div>
+    <div class="scene-card">
+      <div class="scene-icon">🎓</div>
+      <h3>E-Learning Content</h3>
+      <p>Quickly produce narrated course materials from scripts. Bulk-export with consistent voice settings.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── QUOTES / SOCIAL PROOF ── -->
+<section class="section" style="padding-top:0">
+  <div class="quote">
+    <p>"下载完就能用，什么账号都不用注册。Edge模式跑了几下出了结果，要长期用的时候再注册Azure。"</p>
+    <div class="author">— Early user, Windows 11</div>
+  </div>
+  <div class="quote">
+    <p>"做有声书批量出品，Azure的免费额度完全够用。50万字符一个月，换算下来相当于3-4本中长篇。"</p>
+    <div class="author">— Content creator</div>
+  </div>
+</section>
+
+<!-- ── DOWNLOAD CTA ── -->
+<section class="cta-section" id="download-area">
+  <h2>Ready to <span style="color:var(--accent)">try it</span>?</h2>
+  <p>Free to download. No account needed. No credit card required.</p>
+  <div class="cta-buttons">
+    <button class="btn-primary" onclick="alert('Download will be available soon. Check back shortly.')">
+      ↓ Download G-Reader (Windows)
+    </button>
+    <button class="btn-secondary" onclick="document.getElementById('faq').scrollIntoView({behavior:'smooth'})">
+      Read FAQ First
+    </button>
+  </div>
+  <p style="margin-top:20px;font-size:12px;color:#555;">
+    v1.0.0 · Windows 10/11 (64-bit) · ~45 MB installer
+  </p>
+</section>
+
+<!-- ── FAQ ── -->
+<section class="section" id="faq">
+  <span class="section-tag">FAQ</span>
+  <h2>Common questions</h2>
+
+  <div style="max-width:680px">
+    <div style="margin-bottom:28px">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:6px;color:var(--accent);">Do I need an account to use G-Reader?</h3>
+      <p style="font-size:14px;color:var(--text-dim);">No. Edge TTS works immediately after installation with no registration at all. Azure TTS is optional and only requires an account if you want the higher quality voices.</p>
+    </div>
+    <div style="margin-bottom:28px">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:6px;color:var(--accent);">Does Azure charge my credit card when the free quota runs out?</h3>
+      <p style="font-size:14px;color:var(--text-dim);">No. Azure's free tier policy is simple: when your 500K-character monthly quota is exhausted, the service <strong>pauses</strong>. It does not switch to pay-as-you-go and it does not charge your card. Your quota resets on the 1st of the next month automatically.</p>
+    </div>
+    <div style="margin-bottom:28px">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:6px;color:var(--accent);">Why does Edge TTS sometimes fail?</h3>
+      <p style="font-size:14px;color:var(--text-dim);">Edge TTS uses Microsoft's unofficial API interface, which is subject to rate limiting — especially during peak hours. This is outside G-Reader's control. For reliable, uninterrupted output, configure Azure TTS instead.</p>
+    </div>
+    <div style="margin-bottom:28px">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:6px;color:var(--accent);">Why does the Azure voice sound flat / emotionless?</h3>
+      <p style="font-size:14px;color:var(--text-dim);">Azure Neural Voices are engineered for clarity and naturalness, not emotional expression. This is a fundamental characteristic of current neural speech synthesis technology. You can improve perceived expressiveness by using inline speed control and custom pauses.</p>
+    </div>
+    <div style="margin-bottom:28px">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:6px;color:var(--accent);">Does G-Reader work offline?</h3>
+      <p style="font-size:14px;color:var(--text-dim);">G-Reader requires an internet connection to call the Edge or Azure TTS servers. Your text is sent to Microsoft for processing and the audio is returned — it is not synthesized locally.</p>
+    </div>
+    <div style="margin-bottom:28px">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:6px;color:var(--accent);">What file formats does G-Reader output?</h3>
+      <p style="font-size:14px;color:var(--text-dim);">Currently WAV (uncompressed PCM). This preserves the highest audio quality. You can convert WAV to MP3 later using any free tool if needed.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-logo">G-READER</div>
+  <p class="footer-copy">© 2026 G-Reader. Free to use. All rights reserved.</p>
+  <ul class="footer-links">
+    <li><a href="docs/README.md">Documentation</a></li>
+    <li><a href="mailto:bimongl@gmail.com">Contact</a></li>
+  </ul>
+</footer>
+
+</body>
+</html>

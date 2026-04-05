@@ -1,0 +1,25 @@
+# 编译产物
+src-tauri/target/
+*.pdb
+*.wixpdb
+*.wixobj
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Python 依赖（运行时安装）
+src-tauri/python/
