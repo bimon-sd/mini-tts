@@ -23,6 +23,7 @@
       }
     }
   </script>
+<script src="i18n/core.js"></script>
 <style>
     body {
       background-color: transparent;
@@ -33,6 +34,13 @@
       align-items: center;
       justify-content: center;
       font-family: 'JetBrains Mono', 'Consolas', monospace;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    /* textarea 和 input 允许选中文字 */
+    textarea, input {
+      user-select: text;
+      -webkit-user-select: text;
     }
     .utility-window {
       width: 800px;
@@ -149,6 +157,11 @@
     button, input, select, textarea {
       font-family: inherit !important;
     }
+    /* Open Audio / Open / Save To 按钮统一字重 */
+    #btn-open-audio, #btn-open, #btn-save {
+      font-weight: 700 !important;
+      font-family: 'JetBrains Mono', 'Consolas', monospace !important;
+    }
   </style>
 </head>
 <body class="font-sans">
@@ -159,25 +172,25 @@
 <svg class="h-12 w-12 text-neonGreen mx-auto mb-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
 <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
-<h2 class="text-lg font-bold text-neonGreen mb-2">Privacy Notice</h2>
+<h2 class="text-lg font-bold text-neonGreen mb-2" data-i18n="privacy_notice">Privacy Notice</h2>
 </div>
 <div class="text-sm text-nearWhite/80 leading-relaxed mb-6 max-h-48 overflow-y-auto">
-<p class="mb-3">Mini TTS collects anonymous usage data to improve the product. This includes:</p>
+<p class="mb-3" data-i18n="privacy_p1">Mini TTS collects anonymous usage data to improve the product. This includes:</p>
 <ul class="list-disc list-inside mb-3 space-y-1 text-nearWhite/70">
-<li>Anonymous device ID (randomly generated)</li>
-<li>Usage statistics (launch count, button clicks, session duration)</li>
+<li data-i18n="privacy_anon_id">Anonymous device ID (randomly generated)</li>
+<li data-i18n="privacy_stats">Usage statistics (launch count, button clicks, session duration)</li>
 </ul>
-<p class="mb-3">We do NOT collect:</p>
+<p class="mb-3" data-i18n="privacy_not_collect">We do NOT collect:</p>
 <ul class="list-disc list-inside space-y-1 text-nearWhite/70">
-<li>Personal information</li>
-<li>Input text content</li>
-<li>Voice recordings</li>
+<li data-i18n="privacy_no_personal">Personal information</li>
+<li data-i18n="privacy_no_text">Input text content</li>
+<li data-i18n="privacy_no_recordings">Voice recordings</li>
 </ul>
-<p class="mt-4 text-nearWhite/60 text-xs">By clicking "I Agree", you consent to the collection of anonymous usage data.</p>
+<p class="mt-4 text-nearWhite/60 text-xs" data-i18n="privacy_consent">By clicking "I Agree", you consent to the collection of anonymous usage data.</p>
 </div>
 <div class="flex gap-3">
-<button id="btn-privacy-disagree" class="flex-1 py-2.5 rounded-lg border border-borderGray text-nearWhite/60 font-bold hover:bg-borderGray transition-colors">Disagree</button>
-<button id="btn-privacy-agree" class="flex-1 py-2.5 rounded-lg bg-neonGreen text-black font-bold hover:bg-neonGreen/90 transition-colors">I Agree</button>
+<button id="btn-privacy-disagree" class="flex-1 py-2.5 rounded-lg border border-borderGray text-nearWhite/60 font-bold hover:bg-borderGray transition-colors" data-i18n="disagree">Disagree</button>
+<button id="btn-privacy-agree" class="flex-1 py-2.5 rounded-lg bg-neonGreen text-black font-bold hover:bg-neonGreen/90 transition-colors" data-i18n="i_agree">I Agree</button>
 </div>
 </div>
 </div>
@@ -197,20 +210,21 @@
 </svg>
 </button>
 <div class="flex space-x-1.5 border-l border-borderGray pl-4 ml-2 items-center">
-<button class="w-2.5 h-2.5 rounded-full bg-borderGray hover:bg-yellow-500 transition-colors" id="btn-minimize" title="Minimize"></button>
-<button class="w-2.5 h-2.5 rounded-full bg-borderGray hover:bg-green-500 transition-colors" id="btn-maximize" title="Maximize"></button>
-<button class="w-2.5 h-2.5 rounded-full bg-red-900/80 hover:bg-red-500 transition-colors" id="btn-close" title="Close"></button>
+<button class="w-2.5 h-2.5 rounded-full bg-borderGray hover:bg-yellow-500 transition-colors" id="btn-minimize" title="Minimize" data-i18n-title="minimize"></button>
+<button class="w-2.5 h-2.5 rounded-full bg-borderGray hover:bg-green-500 transition-colors" id="btn-maximize" title="Maximize" data-i18n-title="maximize"></button>
+<button class="w-2.5 h-2.5 rounded-full bg-red-900/80 hover:bg-red-500 transition-colors" id="btn-close" title="Close" data-i18n-title="close"></button>
 </div>
 </div>
 </header>
+<!-- 四列：Language | Voice | Open | Save To，baseline对齐让按钮和label文字同一基线 -->
 <section class="px-8 py-3.5 bg-darkGray/30">
-<div class="flex items-start justify-between gap-4">
+<div class="grid grid-cols-4 gap-3 w-full items-baseline">
+<!-- Language列 -->
 <div class="flex flex-col">
-<label class="text-nearWhite uppercase font-bold mb-1 tracking-widest text-[16px]">Language</label>
-<select class="bg-transparent border-none text-neonGreen font-bold focus:ring-0 p-0 cursor-pointer hover:text-white transition-colors text-[14px]" id="language-select">
+<label class="text-nearWhite/80 uppercase font-bold tracking-wider text-[20px]" data-i18n="language">Language</label>
+<select class="bg-transparent border-none text-neonGreen font-bold focus:ring-0 p-0 cursor-pointer hover:text-white transition-colors text-[13px]" id="language-select">
 <option value="zh-CN">Chinese (Mandarin)</option>
 <option value="zh-TW">Chinese (Taiwan)</option>
-<option value="zh-HK">Chinese (Cantonese)</option>
 <option value="en-US">English (US)</option>
 <option value="en-GB">English (UK)</option>
 <option value="en-AU">English (Australia)</option>
@@ -228,52 +242,46 @@
 <option value="pt-PT">Portuguese (Portugal)</option>
 </select>
 </div>
+<!-- Voice列 + Preview按钮 -->
+<div class="flex items-start" style="margin-left: 8px; position: relative;">
 <div class="flex flex-col">
-<label class="text-nearWhite uppercase font-bold mb-1 tracking-widest text-[16px]">Voice</label>
-<select class="bg-transparent border-none text-neonGreen font-bold focus:ring-0 p-0 cursor-pointer hover:text-white transition-colors text-[14px]" id="voice-select">
+<label class="text-nearWhite/80 uppercase font-bold tracking-wider text-[20px]" data-i18n="voice">Voice</label>
+<select class="bg-transparent border-none text-neonGreen font-bold focus:ring-0 p-0 cursor-pointer hover:text-white transition-colors text-[13px]" id="voice-select">
 <option value="zh-CN-XiaoxiaoNeural">Xiaoxiao (Female)</option>
 </select>
 </div>
-<div class="flex flex-col items-center -mt-1">
-<button class="flex items-center space-x-2 text-nearWhite border border-borderGray px-1 py-0.5 rounded-md hover:bg-borderGray transition-all text-[13px] font-bold uppercase tracking-widest" id="btn-open">
-<svg class="h-3 w-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-<span>Open</span>
-</button>
+<button class="text-[10px] font-bold uppercase text-nearWhite/60 border border-gray-600 rounded hover:bg-borderGray transition-all duration-200 tracking-wider absolute" style="margin-top: 3px; width: 43px; height: 21px; left: calc(100% - 55px);" id="btn-preview">▶</button>
 </div>
-<div class="flex flex-col items-end -mt-[6px]">
-<button class="flex items-center space-x-2 text-nearWhite border border-borderGray px-1 py-0.5 rounded-md hover:bg-borderGray transition-all text-[13px] font-bold uppercase tracking-widest" id="btn-save">
-<svg class="h-3 w-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-<path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-<span>Save To</span>
-</button>
-<div class="text-[16px] text-gray-500 font-medium mt-1" id="save-path-display">Not set</div>
+<!-- Open按钮：和Language/Voice的label基线对齐，向右移动 -->
+<div class="flex items-center" style="margin-left: 148px;">
+<button class="px-2 py-0.5 text-[13px] font-bold text-nearWhite border border-gray-500 rounded-md hover:bg-borderGray transition-all duration-200 whitespace-nowrap" id="btn-open" data-i18n="open">Open</button>
+</div>
+<!-- Save To按钮：右侧对齐，Not set在按钮下方 -->
+<div class="flex flex-col items-end">
+<button class="px-2 py-0.5 text-[13px] font-bold uppercase text-nearWhite border border-gray-500 rounded-md hover:bg-borderGray transition-all duration-200 tracking-wider" id="btn-save" data-i18n="save_to">Save To</button>
+<div class="text-[11px] text-gray-500 font-medium mt-1 self-end whitespace-nowrap" id="save-path-display" data-i18n="not_set">Not set</div>
 </div>
 </div>
 </section>
-<!-- Divider Line between language and Input Buffer -->
-<div class="h-px bg-borderGray/40 mx-6 my-2"></div>
-<section class="flex-grow flex flex-col p-6 pt-4 pb-2 gap-3 min-h-0">
-<!-- Input Buffer Header -->
-<div class="flex justify-between items-center px-1 -mt-[15px]">
-<span class="text-[15px] font-bold text-neonGreen uppercase tracking-widest">Input Buffer</span>
-<div class="flex items-center gap-1" id="rate-controls-wrapper">
-<label class="text-[16px] text-nearWhite/70 uppercase font-bold flex-shrink-0">Rate:</label>
-<input class="w-12 h-0.75 bg-borderGray rounded appearance-none cursor-pointer accent-neonGreen flex-shrink-0" type="range" min="0.5" max="2" step="0.1" value="1" id="rate-slider"/>
-<span class="text-[16px] font-bold text-neonGreen flex-shrink-0" id="rate-display">1.0x</span>
-<button class="px-1 py-0 text-[16px] font-bold text-black bg-neonGreen rounded hover:bg-white transition-all flex-shrink-0 h-[22px]" id="btn-rate">Apply</button>
-<span class="text-[16px] text-nearWhite/70 uppercase font-bold flex-shrink-0 ml-[23px]">PAUSE:</span>
-<button class="px-1 py-0.5 text-[16px] font-bold text-nearWhite border border-borderGray rounded hover:bg-borderGray transition-all flex-shrink-0" id="btn-pause-05">[0.5s]</button>
-<button class="px-1 py-0.5 text-[16px] font-bold text-nearWhite border border-borderGray rounded hover:bg-borderGray transition-all flex-shrink-0" id="btn-pause-1">[1s]</button>
+<section class="flex-grow flex flex-col p-6 pt-2 pb-2 gap-2 min-h-0">
+<!-- Input Buffer Header：缩小间距，调整rate/pause控件大小 -->
+<div class="flex justify-between items-center px-1 -mt-1">
+<span class="text-[13px] font-semibold text-neonGreen uppercase tracking-wider" data-i18n="input_buffer">Input Buffer</span>
+<div class="flex items-center" id="rate-controls-wrapper" style="margin-left: -8px;">
+<span class="text-[14px] text-nearWhite/70 uppercase font-bold flex-shrink-0" data-i18n="rate">Rate:</span>
+<input class="w-10 h-0.75 bg-borderGray rounded appearance-none cursor-pointer accent-neonGreen flex-shrink-0 mx-1" type="range" min="0.5" max="2" step="0.1" value="1" id="rate-slider"/>
+<span class="text-[14px] font-bold text-neonGreen flex-shrink-0" id="rate-display">1.0x</span>
+<button class="px-1 py-0 text-[14px] font-bold text-black bg-neonGreen rounded hover:bg-white transition-all flex-shrink-0 h-[20px] ml-1" id="btn-rate" data-i18n="apply">Apply</button>
+<span class="text-[14px] text-nearWhite/70 uppercase font-bold flex-shrink-0 ml-6" data-i18n="pause">PAUSE:</span>
+<button class="px-1 py-0.5 text-[14px] font-bold text-nearWhite border border-borderGray rounded hover:bg-borderGray transition-all flex-shrink-0 ml-1" id="btn-pause-05">[0.5s]</button>
+<button class="px-1 py-0.5 text-[14px] font-bold text-nearWhite border border-borderGray rounded hover:bg-borderGray transition-all flex-shrink-0 ml-1" id="btn-pause-1">[1s]</button>
 </div>
-<div class="text-[16px] font-semibold text-nearWhite" id="char-count">0 chars</div>
+<div class="text-[13px] font-medium text-nearWhite/60" id="char-count" data-i18n="chars">0 chars</div>
 </div>
 <!-- Textarea -->
 <div class="relative flex-grow min-h-[15px] group">
 <div class="absolute -inset-0.5 bg-neonGreen/5 rounded-xl blur opacity-20 group-focus-within:opacity-100 transition duration-500"></div>
-<textarea class="relative w-full h-full bg-darkGray border border-borderGray rounded-xl p-4 text-gray-100 placeholder-nearWhite/30 focus:outline-none focus:border-neonGreen/40 focus:ring-0 transition-all resize-none overflow-y-auto scrollbar-thin scrollbar-thumb-borderGray scrollbar-track-transparent" style="font-family: 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 15px; font-weight: 400; line-height: 1.8; letter-spacing: 0.02em;" id="tts-input" placeholder="ENTER TEXT TO SYNTHESIZE..."></textarea>
+<textarea class="relative w-full h-full bg-darkGray border border-borderGray rounded-xl p-4 text-gray-100 placeholder-nearWhite/30 focus:outline-none focus:border-neonGreen/40 focus:ring-0 transition-all resize-none overflow-y-auto scrollbar-thin scrollbar-thumb-borderGray scrollbar-track-transparent" style="font-family: 'Microsoft YaHei', 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace; font-size: 16px; font-weight: 400; line-height: 1.8; letter-spacing: 0.02em;" id="tts-input" placeholder="ENTER TEXT TO SYNTHESIZE..."></textarea>
 </div>
 </section>
 <!-- Bottom Bar: Vol (left) | Player | Execute -->
@@ -294,29 +302,34 @@
 <svg class="w-4 h-4 text-black hidden" id="icon-pause" fill="currentColor" viewbox="0 0 20 20"><path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"/></svg>
 </button>
 
-<!-- Progress Bar - Clean Style -->
-<div class="flex items-center gap-2 flex-grow mr-[75px]">
-<div class="flex items-center gap-1.5 font-mono text-[11px] text-nearWhite/50">
+<!-- Progress Bar Section with Background Music Display -->
+<div class="relative flex items-center gap-2 flex-grow mr-[50px]">
+<!-- Background Music Filename Display - positioned above progress bar -->
+<span class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full text-[11px] text-neonGreen font-medium hidden" id="bg-music-display">▶ <span id="bg-music-name"></span></span>
+<!-- Current Time -->
+<div class="font-mono text-[11px] text-nearWhite/50">
 <span class="tabular-nums" id="player-current-time">0:00</span>
 </div>
+<!-- Progress Bar -->
 <div class="flex-grow relative h-1 bg-borderGray/50 rounded-full cursor-pointer group" id="player-progress-bar">
 <div class="absolute inset-y-0 left-0 bg-neonGreen rounded-full transition-all" id="player-progress" style="width: 0%"></div>
 <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-neonGreen rounded-full shadow-lg shadow-neonGreen/40 opacity-0 group-hover:opacity-100 transition-opacity" id="player-progress-handle" style="left: 0%"></div>
 </div>
-<div class="flex items-center gap-1.5 font-mono text-[11px] text-nearWhite/50">
+<!-- Remaining Time -->
+<div class="font-mono text-[11px] text-nearWhite/50">
 <span class="tabular-nums" id="player-remaining-time">-0:00</span>
 </div>
 </div>
 
 <!-- Stop Button + Open Audio as unit -->
-<div class="flex items-center gap-2 -ml-[60px]">
+<div class="flex items-center gap-2 -ml-[52px]">
 <!-- Stop Button -->
 <button class="w-9 h-9 flex items-center justify-center rounded-full border border-nearWhite/60 hover:bg-nearWhite/10 hover:border-nearWhite/80 transition-all duration-200" id="btn-player-stop" title="Stop">
 <svg class="w-3 h-3 text-nearWhite/60" fill="currentColor" viewbox="0 0 16 16"><rect x="3" y="3" width="10" height="10" rx="1"/></svg>
 </button>
 
 <!-- Open Button -->
-<button class="px-3 py-1.5 text-[13px] font-bold uppercase text-nearWhite border border-borderGray/60 rounded-md hover:bg-borderGray transition-all duration-200 tracking-wider" id="btn-open-audio" title="Open Audio">Open Audio</button>
+<button class="px-2 py-0.5 text-[13px] font-bold uppercase text-nearWhite border border-gray-500 rounded-md hover:bg-borderGray transition-all duration-200 tracking-wider" id="btn-open-audio" title="Open Audio" style="margin-left: 6px;" data-i18n="open_audio">Open Audio</button>
 </div>
 </div>
 
@@ -326,361 +339,1429 @@
 <!-- Execute Button -->
 <div class="flex items-center pr-2">
 <button class="neon-glow flex items-center gap-1 bg-neonGreen text-black font-bold px-4 py-1.5 rounded-md hover:bg-neonGreen/90 shadow-lg shadow-neonGreen/20 transition-all duration-200 active:scale-95 group" id="btn-play">
-<span class="text-[15px] uppercase font-bold tracking-wider">Execute</span>
+<span class="text-[15px] uppercase font-bold tracking-wider" data-i18n="execute">Execute</span>
 <svg class="h-3.5 w-3.5 transform group-hover:translate-x-0.5 transition-transform ml-0.5" fill="currentColor" viewbox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
 </button>
 </div>
 </section>
 </main>
-<script>
+<script type="module">
     const { invoke } = window.__TAURI__.core;
+    const { listen } = window.__TAURI__.event;
+
+    // Initialize i18n - MUST complete before any other code
+    if (window.i18n) {
+      try {
+        await window.i18n.init();
+        console.log('[i18n] Initialized with locale:', window.i18n.currentLocale);
+      } catch(e) {
+        console.error('[i18n] Init failed:', e);
+      }
+    } else {
+      console.error('[i18n] window.i18n not available!');
+    }
+
+    // Listen for settings-changed event from settings window
+    listen('settings-changed', (event) => {
+      console.log('[i18n] Settings changed event:', event.payload);
+      if (event.payload && event.payload.uiLang && window.i18n) {
+        window.i18n.setLocale(event.payload.uiLang);
+        console.log('[i18n] Locale changed to:', event.payload.uiLang);
+      }
+    }).catch(e => console.error('[i18n] Failed to listen for settings-changed:', e));
 
     // Azure Neural TTS 完整语音列表（支持多语言、多风格）
     const azureVoicesByLanguage = {
-        'zh-CN': [
-            { value: 'zh-CN-XiaoxiaoNeural', label: 'Xiaoxiao (Female)', styles: ['general', 'assistant', 'chat', 'calm', 'angry', 'cheerful', 'sad'] },
-            { value: 'zh-CN-XiaoyiNeural', label: 'Xiaoyi (Female)', styles: ['general', 'angry', 'cheerful', 'sad'] },
-            { value: 'zh-CN-YunjianNeural', label: 'Yunjian (Male)', styles: ['general', 'narration'] },
-            { value: 'zh-CN-YunxiNeural', label: 'Yunxi (Male)', styles: ['general', 'assistant', 'chat', 'cheerful', 'sad', 'angry'] },
-            { value: 'zh-CN-YunxiaNeural', label: 'Yunxia (Male)', styles: ['general', 'cheerful', 'angry', 'sad'] },
-            { value: 'zh-CN-YunyangNeural', label: 'Yunyang (Male)', styles: ['general', 'customer service'] },
-            { value: 'zh-CN-liaoning-XiaobeiNeural', label: 'Xiaobei (Female)', styles: ['general'] },
-            { value: 'zh-CN-shaanxi-XiaoniNeural', label: 'Xiaoni (Female)', styles: ['general'] },
-        ],
-        'zh-TW': [
-            { value: 'zh-TW-HsiaoChenNeural', label: 'HsiaoChen (Female)', styles: ['general'] },
-            { value: 'zh-TW-YunJheNeural', label: 'YunJhe (Male)', styles: ['general'] },
-            { value: 'zh-TW-HsiaoYuNeural', label: 'HsiaoYu (Female)', styles: ['general'] },
-        ],
-        'zh-HK': [
-            { value: 'zh-HK-HiuGaaiNeural', label: 'HiuGaai (Female)', styles: ['general'] },
-            { value: 'zh-HK-HiuMaanNeural', label: 'HiuMaan (Female)', styles: ['general'] },
-            { value: 'zh-HK-WanLungNeural', label: 'WanLung (Male)', styles: ['general'] },
-        ],
-        'en-US': [
-            { value: 'en-US-JennyNeural', label: 'Jenny (Female)', styles: ['general', 'assistant', 'chat', 'customer service', 'newscast'] },
-            { value: 'en-US-AvaNeural', label: 'Ava (Female)', styles: ['general', 'angry', 'cheerful', 'sad', 'excited'] },
-            { value: 'en-US-AnaNeural', label: 'Ana (Female)', styles: ['general'] },
-            { value: 'en-US-AriaNeural', label: 'Aria (Female)', styles: ['general', 'narration', 'newscast'] },
-            { value: 'en-US-MichelleNeural', label: 'Michelle (Female)', styles: ['general'] },
-            { value: 'en-US-RogerNeural', label: 'Roger (Male)', styles: ['general'] },
-            { value: 'en-US-GuyNeural', label: 'Guy (Male)', styles: ['general', 'newscast'] },
-            { value: 'en-US-ChristopherNeural', label: 'Christopher (Male)', styles: ['general'] },
-            { value: 'en-US-EricNeural', label: 'Eric (Male)', styles: ['general'] },
-            { value: 'en-US-SteffanNeural', label: 'Steffan (Male)', styles: ['general'] },
-            { value: 'en-US-AndrewNeural', label: 'Andrew (Male)', styles: ['general', 'chat', 'newscast'] },
-        ],
-        'en-GB': [
-            { value: 'en-GB-SoniaNeural', label: 'Sonia (Female)', styles: ['general'] },
-            { value: 'en-GB-LibbyNeural', label: 'Libby (Female)', styles: ['general'] },
-            { value: 'en-GB-MaisieNeural', label: 'Maisie (Female)', styles: ['general'] },
-            { value: 'en-GB-RyanNeural', label: 'Ryan (Male)', styles: ['general'] },
-            { value: 'en-GB-ThomasNeural', label: 'Thomas (Male)', styles: ['general'] },
-        ],
-        'en-AU': [
-            { value: 'en-AU-NatashaNeural', label: 'Natasha (Female)', styles: ['general'] },
-            { value: 'en-AU-WilliamNeural', label: 'William (Male)', styles: ['general'] },
-        ],
-        'en-CA': [
-            { value: 'en-CA-ClaraNeural', label: 'Clara (Female)', styles: ['general'] },
-            { value: 'en-CA-LiamNeural', label: 'Liam (Male)', styles: ['general'] },
-        ],
-        'en-IN': [
-            { value: 'en-IN-NeerjaNeural', label: 'Neerja (Female)', styles: ['general'] },
-            { value: 'en-IN-PrabhatNeural', label: 'Prabhat (Male)', styles: ['general'] },
-        ],
-        'ja-JP': [
-            { value: 'ja-JP-NanamiNeural', label: 'Nanami (Female)', styles: ['general', 'chat', 'cheerful', 'sad'] },
-            { value: 'ja-JP-KeitaNeural', label: 'Keita (Male)', styles: ['general'] },
-            { value: 'ja-JP-AoiNeural', label: 'Aoi (Female)', styles: ['general'] },
-            { value: 'ja-JP-DaichiNeural', label: 'Daichi (Male)', styles: ['general'] },
-            { value: 'ja-JP-MayuNeural', label: 'Mayu (Female)', styles: ['general'] },
-            { value: 'ja-JP-NaokiNeural', label: 'Naoki (Male)', styles: ['general'] },
-            { value: 'ja-JP-ShioriNeural', label: 'Shiori (Female)', styles: ['general'] },
-        ],
-        'ko-KR': [
-            { value: 'ko-KR-SunHiNeural', label: 'Sun-Hi (Female)', styles: ['general'] },
-            { value: 'ko-KR-InJoonNeural', label: 'InJoon (Male)', styles: ['general'] },
-            { value: 'ko-KR-HyunsuNeural', label: 'Hyunsu (Male)', styles: ['general'] },
-            { value: 'ko-KR-SoonBokNeural', label: 'SoonBok (Female)', styles: ['general'] },
-        ],
-        'es-ES': [
-            { value: 'es-ES-ElviraNeural', label: 'Elvira (Female)', styles: ['general'] },
-            { value: 'es-ES-AlvaroNeural', label: 'Alvaro (Male)', styles: ['general'] },
-            { value: 'es-ES-AbrilNeural', label: 'Abril (Female)', styles: ['general'] },
-            { value: 'es-ES-ArnauNeural', label: 'Arnau (Male)', styles: ['general'] },
-            { value: 'es-ES-DarioNeural', label: 'Dario (Male)', styles: ['general'] },
-            { value: 'es-ES-EliasNeural', label: 'Elias (Male)', styles: ['general'] },
-            { value: 'es-ES-EstrellaNeural', label: 'Estrella (Female)', styles: ['general'] },
-            { value: 'es-ES-IreneNeural', label: 'Irene (Female)', styles: ['general'] },
-            { value: 'es-ES-LauraNeural', label: 'Laura (Female)', styles: ['general'] },
-            { value: 'es-ES-LiaNeural', label: 'Lia (Female)', styles: ['general'] },
-        ],
-        'es-MX': [
-            { value: 'es-MX-DaliaNeural', label: 'Dalia (Female)', styles: ['general'] },
-            { value: 'es-MX-JorgeNeural', label: 'Jorge (Male)', styles: ['general'] },
-            { value: 'es-MX-BeatrizNeural', label: 'Beatriz (Female)', styles: ['general'] },
-            { value: 'es-MX-CandelaNeural', label: 'Candela (Female)', styles: ['general'] },
-            { value: 'es-MX-CarlotaNeural', label: 'Carlota (Female)', styles: ['general'] },
-            { value: 'es-MX-CecilioNeural', label: 'Cecilio (Male)', styles: ['general'] },
-            { value: 'es-MX-GerardoNeural', label: 'Gerardo (Male)', styles: ['general'] },
-            { value: 'es-MX-LarissaNeural', label: 'Larissa (Female)', styles: ['general'] },
-            { value: 'es-MX-LibertoNeural', label: 'Liberto (Male)', styles: ['general'] },
-            { value: 'es-MX-LucianoNeural', label: 'Luciano (Male)', styles: ['general'] },
-            { value: 'es-MX-MarinaNeural', label: 'Marina (Female)', styles: ['general'] },
-            { value: 'es-MX-NuriaNeural', label: 'Nuria (Female)', styles: ['general'] },
-            { value: 'es-MX-PelayoNeural', label: 'Pelayo (Male)', styles: ['general'] },
-            { value: 'es-MX-RenataNeural', label: 'Renata (Female)', styles: ['general'] },
-            { value: 'es-MX-YagoNeural', label: 'Yago (Male)', styles: ['general'] },
-        ],
-        'fr-FR': [
-            { value: 'fr-FR-DeniseNeural', label: 'Denise (Female)', styles: ['general', 'cheerful', 'sad'] },
-            { value: 'fr-FR-HenriNeural', label: 'Henri (Male)', styles: ['general', 'cheerful', 'sad'] },
-            { value: 'fr-FR-EloiseNeural', label: 'Eloise (Female)', styles: ['general'] },
-            { value: 'fr-FR-RemyMultilingualNeural', label: 'Remy (Male)', styles: ['general'] },
-            { value: 'fr-FR-VivienneMultilingualNeural', label: 'Vivienne (Female)', styles: ['general'] },
-        ],
-        'fr-CA': [
-            { value: 'fr-CA-SylvieNeural', label: 'Sylvie (Female)', styles: ['general'] },
-            { value: 'fr-CA-AntoineNeural', label: 'Antoine (Male)', styles: ['general'] },
-            { value: 'fr-CA-JeanNeural', label: 'Jean (Male)', styles: ['general'] },
-        ],
-        'de-DE': [
-            { value: 'de-DE-KatjaNeural', label: 'Katja (Female)', styles: ['general'] },
-            { value: 'de-DE-ConradNeural', label: 'Conrad (Male)', styles: ['general'] },
-            { value: 'de-DE-AmalaNeural', label: 'Amala (Female)', styles: ['general'] },
-            { value: 'de-DE-BerndNeural', label: 'Bernd (Male)', styles: ['general'] },
-            { value: 'de-DE-ChristophNeural', label: 'Christoph (Male)', styles: ['general'] },
-            { value: 'de-DE-ElkeNeural', label: 'Elke (Female)', styles: ['general'] },
-            { value: 'de-DE-GiselaNeural', label: 'Gisela (Female)', styles: ['general'] },
-            { value: 'de-DE-KasperNeural', label: 'Kasper (Male)', styles: ['general'] },
-            { value: 'de-DE-KillianNeural', label: 'Killian (Male)', styles: ['general'] },
-            { value: 'de-DE-KlarissaNeural', label: 'Klarissa (Female)', styles: ['general'] },
-            { value: 'de-DE-KlausNeural', label: 'Klaus (Male)', styles: ['general'] },
-            { value: 'de-DE-LouisaNeural', label: 'Louisa (Female)', styles: ['general'] },
-            { value: 'de-DE-MajaNeural', label: 'Maja (Female)', styles: ['general'] },
-            { value: 'de-DE-RalfNeural', label: 'Ralf (Male)', styles: ['general'] },
-            { value: 'de-DE-TanjaNeural', label: 'Tanja (Female)', styles: ['general'] },
-        ],
-        'it-IT': [
-            { value: 'it-IT-ElsaNeural', label: 'Elsa (Female)', styles: ['general'] },
-            { value: 'it-IT-IsabellaNeural', label: 'Isabella (Female)', styles: ['general'] },
-            { value: 'it-IT-DiegoNeural', label: 'Diego (Male)', styles: ['general'] },
-            { value: 'it-IT-BenignoNeural', label: 'Benigno (Male)', styles: ['general'] },
-            { value: 'it-IT-CalimeroNeural', label: 'Calimero (Male)', styles: ['general'] },
-            { value: 'it-IT-CataldoNeural', label: 'Cataldo (Male)', styles: ['general'] },
-            { value: 'it-IT-FabiolaNeural', label: 'Fabiola (Female)', styles: ['general'] },
-            { value: 'it-IT-FiammaNeural', label: 'Fiamma (Female)', styles: ['general'] },
-            { value: 'it-IT-GianniNeural', label: 'Gianni (Male)', styles: ['general'] },
-            { value: 'it-IT-ImeldaNeural', label: 'Imelda (Female)', styles: ['general'] },
-            { value: 'it-IT-IrmaNeural', label: 'Irma (Female)', styles: ['general'] },
-            { value: 'it-IT-LisandroNeural', label: 'Lisandro (Male)', styles: ['general'] },
-            { value: 'it-IT-PalmiraNeural', label: 'Palmira (Female)', styles: ['general'] },
-            { value: 'it-IT-PierinaNeural', label: 'Pierina (Female)', styles: ['general'] },
-            { value: 'it-IT-RinaldoNeural', label: 'Rinaldo (Male)', styles: ['general'] },
-        ],
-        'pt-BR': [
-            { value: 'pt-BR-FranciscaNeural', label: 'Francisca (Female)', styles: ['general'] },
-            { value: 'pt-BR-AntonioNeural', label: 'Antonio (Male)', styles: ['general'] },
-            { value: 'pt-BR-BrendaNeural', label: 'Brenda (Female)', styles: ['general'] },
-            { value: 'pt-BR-DonatoNeural', label: 'Donato (Male)', styles: ['general'] },
-            { value: 'pt-BR-ElzaNeural', label: 'Elza (Female)', styles: ['general'] },
-            { value: 'pt-BR-FabioNeural', label: 'Fabio (Male)', styles: ['general'] },
-            { value: 'pt-BR-GiovannaNeural', label: 'Giovanna (Female)', styles: ['general'] },
-            { value: 'pt-BR-HumbertoNeural', label: 'Humberto (Male)', styles: ['general'] },
-            { value: 'pt-BR-JulioNeural', label: 'Julio (Male)', styles: ['general'] },
-            { value: 'pt-BR-LeilaNeural', label: 'Leila (Female)', styles: ['general'] },
-            { value: 'pt-BR-LeticiaNeural', label: 'Leticia (Female)', styles: ['general'] },
-            { value: 'pt-BR-ManuelaNeural', label: 'Manuela (Female)', styles: ['general'] },
-            { value: 'pt-BR-NicolauNeural', label: 'Nicolau (Male)', styles: ['general'] },
-            { value: 'pt-BR-ValerioNeural', label: 'Valerio (Male)', styles: ['general'] },
-            { value: 'pt-BR-YaraNeural', label: 'Yara (Female)', styles: ['general'] },
-        ],
-        'pt-PT': [
-            { value: 'pt-PT-RaquelNeural', label: 'Raquel (Female)', styles: ['general'] },
-            { value: 'pt-PT-DuarteNeural', label: 'Duarte (Male)', styles: ['general'] },
-        ],
-    };
+'af-ZA': [
+        { value: 'af-ZA-AdriNeural3', label: 'Adri (Female)', styles: ['general'] },
+        { value: 'af-ZA-WillemNeural3', label: 'Willem (Male)', styles: ['general'] },
+    ],
+    'am-ET': [
+        { value: 'am-ET-AmehaNeural3', label: 'Ameha (Male)', styles: ['general'] },
+        { value: 'am-ET-MekdesNeural3', label: 'Mekdes (Female)', styles: ['general'] },
+    ],
+    'ar-AE': [
+        { value: 'ar-AE-FatimaNeural', label: 'Fatima (Female)', styles: ['general'] },
+        { value: 'ar-AE-HamdanNeural', label: 'Hamdan (Male)', styles: ['general'] },
+    ],
+    'ar-BH': [
+        { value: 'ar-BH-AliNeural', label: 'Ali (Male)', styles: ['general'] },
+        { value: 'ar-BH-LailaNeural', label: 'Laila (Female)', styles: ['general'] },
+    ],
+    'ar-DZ': [
+        { value: 'ar-DZ-AminaNeural', label: 'Amina (Female)', styles: ['general'] },
+        { value: 'ar-DZ-IsmaelNeural', label: 'Ismael (Male)', styles: ['general'] },
+    ],
+    'ar-EG': [
+        { value: 'ar-EG-SalmaNeural', label: 'Salma (Female)', styles: ['general'] },
+        { value: 'ar-EG-ShakirNeural', label: 'Shakir (Male)', styles: ['general'] },
+    ],
+    'ar-IQ': [
+        { value: 'ar-IQ-BasselNeural', label: 'Bassel (Male)', styles: ['general'] },
+        { value: 'ar-IQ-RanaNeural', label: 'Rana (Female)', styles: ['general'] },
+    ],
+    'ar-JO': [
+        { value: 'ar-JO-SanaNeural', label: 'Sana (Female)', styles: ['general'] },
+        { value: 'ar-JO-TaimNeural', label: 'Taim (Male)', styles: ['general'] },
+    ],
+    'ar-KW': [
+        { value: 'ar-KW-FahedNeural', label: 'Fahed (Male)', styles: ['general'] },
+        { value: 'ar-KW-NouraNeural', label: 'Noura (Female)', styles: ['general'] },
+    ],
+    'ar-LB': [
+        { value: 'ar-LB-LaylaNeural', label: 'Layla (Female)', styles: ['general'] },
+        { value: 'ar-LB-RamiNeural', label: 'Rami (Male)', styles: ['general'] },
+    ],
+    'ar-LY': [
+        { value: 'ar-LY-ImanNeural', label: 'Iman (Female)', styles: ['general'] },
+        { value: 'ar-LY-OmarNeural', label: 'Omar (Male)', styles: ['general'] },
+    ],
+    'ar-MA': [
+        { value: 'ar-MA-JamalNeural', label: 'Jamal (Male)', styles: ['general'] },
+        { value: 'ar-MA-MounaNeural', label: 'Mouna (Female)', styles: ['general'] },
+    ],
+    'ar-OM': [
+        { value: 'ar-OM-AbdullahNeural', label: 'Abdullah (Male)', styles: ['general'] },
+        { value: 'ar-OM-AyshaNeural', label: 'Aysha (Female)', styles: ['general'] },
+    ],
+    'ar-QA': [
+        { value: 'ar-QA-AmalNeural', label: 'Amal (Female)', styles: ['general'] },
+        { value: 'ar-QA-MoazNeural', label: 'Moaz (Male)', styles: ['general'] },
+    ],
+    'ar-SA': [
+        { value: 'ar-SA-HamedNeural', label: 'Hamed (Male)', styles: ['general'] },
+        { value: 'ar-SA-ZariyahNeural', label: 'Zariyah (Female)', styles: ['general'] },
+    ],
+    'ar-SY': [
+        { value: 'ar-SY-AmanyNeural', label: 'Amany (Female)', styles: ['general'] },
+        { value: 'ar-SY-LaithNeural', label: 'Laith (Male)', styles: ['general'] },
+    ],
+    'ar-TN': [
+        { value: 'ar-TN-HediNeural', label: 'Hedi (Male)', styles: ['general'] },
+        { value: 'ar-TN-ReemNeural', label: 'Reem (Female)', styles: ['general'] },
+    ],
+    'ar-YE': [
+        { value: 'ar-YE-MaryamNeural', label: 'Maryam (Female)', styles: ['general'] },
+        { value: 'ar-YE-SalehNeural', label: 'Saleh (Male)', styles: ['general'] },
+    ],
+    'as-IN': [
+        { value: 'as-IN-PriyomNeural3', label: 'Priyom (Male)', styles: ['general'] },
+        { value: 'as-IN-YashicaNeural3', label: 'Yashica (Female)', styles: ['general'] },
+    ],
+    'az-AZ': [
+        { value: 'az-AZ-BabekNeural3', label: 'Babek (Male)', styles: ['general'] },
+        { value: 'az-AZ-BanuNeural3', label: 'Banu (Female)', styles: ['general'] },
+    ],
+    'bg-BG': [
+        { value: 'bg-BG-BorislavNeural', label: 'Borislav (Male)', styles: ['general'] },
+        { value: 'bg-BG-KalinaNeural', label: 'Kalina (Female)', styles: ['general'] },
+    ],
+    'bn-BD': [
+        { value: 'bn-BD-NabanitaNeural3', label: 'Nabanita (Female)', styles: ['general'] },
+        { value: 'bn-BD-PradeepNeural3', label: 'Pradeep (Male)', styles: ['general'] },
+    ],
+    'bn-IN': [
+        { value: 'bn-IN-BashkarNeural3', label: 'Bashkar (Male)', styles: ['general'] },
+        { value: 'bn-IN-TanishaaNeural3', label: 'Tanishaa (Female)', styles: ['general'] },
+    ],
+    'bs-BA': [
+        { value: 'bs-BA-GoranNeural3', label: 'Goran (Male)', styles: ['general'] },
+        { value: 'bs-BA-VesnaNeural3', label: 'Vesna (Female)', styles: ['general'] },
+    ],
+    'ca-ES': [
+        { value: 'ca-ES-AlbaNeural', label: 'Alba (Female)', styles: ['general'] },
+        { value: 'ca-ES-EnricNeural', label: 'Enric (Male)', styles: ['general'] },
+        { value: 'ca-ES-JoanaNeural', label: 'Joana (Female)', styles: ['general'] },
+    ],
+    'cs-CZ': [
+        { value: 'cs-CZ-AntoninNeural', label: 'Antonin (Male)', styles: ['general'] },
+        { value: 'cs-CZ-VlastaNeural', label: 'Vlasta (Female)', styles: ['general'] },
+    ],
+    'cy-GB': [
+        { value: 'cy-GB-AledNeural3', label: 'Aled (Male)', styles: ['general'] },
+        { value: 'cy-GB-NiaNeural3', label: 'Nia (Female)', styles: ['general'] },
+    ],
+    'da-DK': [
+        { value: 'da-DK-ChristelNeural', label: 'Christel (Female)', styles: ['general'] },
+        { value: 'da-DK-JeppeNeural', label: 'Jeppe (Male)', styles: ['general'] },
+    ],
+    'de-AT': [
+        { value: 'de-AT-IngridNeural', label: 'Ingrid (Female)', styles: ['general'] },
+        { value: 'de-AT-JonasNeural', label: 'Jonas (Male)', styles: ['general'] },
+    ],
+    'de-CH': [
+        { value: 'de-CH-JanNeural', label: 'Jan (Male)', styles: ['general'] },
+        { value: 'de-CH-LeniNeural', label: 'Leni (Female)', styles: ['general'] },
+    ],
+    'de-DE': [
+        { value: 'de-DE-AmalaNeural', label: 'Amala (Female)', styles: ['general'] },
+        { value: 'de-DE-BerndNeural', label: 'Bernd (Male)', styles: ['general'] },
+        { value: 'de-DE-ChristophNeural', label: 'Christoph (Male)', styles: ['general'] },
+        { value: 'de-DE-ConradNeural', label: 'Conrad (Male)', styles: ['general'] },
+        { value: 'de-DE-ElkeNeural', label: 'Elke (Female)', styles: ['general'] },
+        { value: 'de-DE-GiselaNeural', label: 'Gisela (Female, Child)', styles: ['general'] },
+        { value: 'de-DE-KasperNeural', label: 'Kasper (Male)', styles: ['general'] },
+        { value: 'de-DE-KatjaNeural', label: 'Katja (Female)', styles: ['general'] },
+        { value: 'de-DE-KillianNeural', label: 'Killian (Male)', styles: ['general'] },
+        { value: 'de-DE-KlarissaNeural', label: 'Klarissa (Female)', styles: ['general'] },
+        { value: 'de-DE-KlausNeural', label: 'Klaus (Male)', styles: ['general'] },
+        { value: 'de-DE-LouisaNeural', label: 'Louisa (Female)', styles: ['general'] },
+        { value: 'de-DE-MajaNeural', label: 'Maja (Female)', styles: ['general'] },
+        { value: 'de-DE-RalfNeural', label: 'Ralf (Male)', styles: ['general'] },
+        { value: 'de-DE-TanjaNeural', label: 'Tanja (Female)', styles: ['general'] },
+    ],
+    'el-GR': [
+        { value: 'el-GR-AthinaNeural', label: 'Athina (Female)', styles: ['general'] },
+        { value: 'el-GR-NestorasNeural', label: 'Nestoras (Male)', styles: ['general'] },
+    ],
+    'en-AU': [
+        { value: 'en-AU-AnnetteNeural', label: 'Annette (Female)', styles: ['general'] },
+        { value: 'en-AU-CarlyNeural', label: 'Carly (Female)', styles: ['general'] },
+        { value: 'en-AU-DarrenNeural', label: 'Darren (Male)', styles: ['general'] },
+        { value: 'en-AU-DuncanNeural', label: 'Duncan (Male)', styles: ['general'] },
+        { value: 'en-AU-ElsieNeural', label: 'Elsie (Female)', styles: ['general'] },
+        { value: 'en-AU-FreyaNeural', label: 'Freya (Female)', styles: ['general'] },
+        { value: 'en-AU-JoanneNeural', label: 'Joanne (Female)', styles: ['general'] },
+        { value: 'en-AU-KenNeural', label: 'Ken (Male)', styles: ['general'] },
+        { value: 'en-AU-KimNeural', label: 'Kim (Female)', styles: ['general'] },
+        { value: 'en-AU-NatashaNeural', label: 'Natasha (Female)', styles: ['general'] },
+        { value: 'en-AU-NeilNeural', label: 'Neil (Male)', styles: ['general'] },
+        { value: 'en-AU-TimNeural', label: 'Tim (Male)', styles: ['general'] },
+        { value: 'en-AU-TinaNeural', label: 'Tina (Female)', styles: ['general'] },
+        { value: 'en-AU-WilliamNeural', label: 'William (Male)', styles: ['general'] },
+    ],
+    'en-CA': [
+        { value: 'en-CA-ClaraNeural', label: 'Clara (Female)', styles: ['general'] },
+        { value: 'en-CA-LiamNeural', label: 'Liam (Male)', styles: ['general'] },
+    ],
+    'en-GB': [
+        { value: 'en-GB-AbbiNeural', label: 'Abbi (Female)', styles: ['general'] },
+        { value: 'en-GB-AlfieNeural', label: 'Alfie (Male)', styles: ['general'] },
+        { value: 'en-GB-BellaNeural', label: 'Bella (Female)', styles: ['general'] },
+        { value: 'en-GB-ElliotNeural', label: 'Elliot (Male)', styles: ['general'] },
+        { value: 'en-GB-EthanNeural', label: 'Ethan (Male)', styles: ['general'] },
+        { value: 'en-GB-HollieNeural', label: 'Hollie (Female)', styles: ['general'] },
+        { value: 'en-GB-LibbyNeural', label: 'Libby (Female)', styles: ['general'] },
+        { value: 'en-GB-MaisieNeural', label: 'Maisie (Female, Child)', styles: ['general'] },
+        { value: 'en-GB-NoahNeural', label: 'Noah (Male)', styles: ['general'] },
+        { value: 'en-GB-OliverNeural', label: 'Oliver (Male)', styles: ['general'] },
+        { value: 'en-GB-OliviaNeural', label: 'Olivia (Female)', styles: ['general'] },
+        { value: 'en-GB-RyanNeural', label: 'Ryan (Male)', styles: ['general'] },
+        { value: 'en-GB-SoniaNeural', label: 'Sonia (Female)', styles: ['general'] },
+        { value: 'en-GB-ThomasNeural', label: 'Thomas (Male)', styles: ['general'] },
+    ],
+    'en-HK': [
+        { value: 'en-HK-SamNeural', label: 'Sam (Male)', styles: ['general'] },
+        { value: 'en-HK-YanNeural', label: 'Yan (Female)', styles: ['general'] },
+    ],
+    'en-IE': [
+        { value: 'en-IE-ConnorNeural', label: 'Connor (Male)', styles: ['general'] },
+        { value: 'en-IE-EmilyNeural', label: 'Emily (Female)', styles: ['general'] },
+    ],
+    'en-IN': [
+        { value: 'en-IN-AaravNeural', label: 'Aarav (Male)', styles: ['general'] },
+        { value: 'en-IN-AartiIndicNeural', label: 'AartiIndic (Female)', styles: ['general'] },
+        { value: 'en-IN-AartiNeural', label: 'Aarti (Female)', styles: ['general'] },
+        { value: 'en-IN-AashiNeural', label: 'Aashi (Female)', styles: ['general'] },
+        { value: 'en-IN-AnanyaNeural', label: 'Ananya (Female)', styles: ['general'] },
+        { value: 'en-IN-ArjunIndicNeural', label: 'ArjunIndic (Male)', styles: ['general'] },
+        { value: 'en-IN-ArjunNeural', label: 'Arjun (Male)', styles: ['general'] },
+        { value: 'en-IN-KavyaNeural', label: 'Kavya (Female)', styles: ['general'] },
+        { value: 'en-IN-KunalNeural', label: 'Kunal (Male)', styles: ['general'] },
+        { value: 'en-IN-NeerjaIndicNeural', label: 'NeerjaIndic (Female)', styles: ['general'] },
+        { value: 'en-IN-NeerjaNeural', label: 'Neerja (Female)', styles: ['general'] },
+        { value: 'en-IN-PrabhatIndicNeural', label: 'PrabhatIndic (Male)', styles: ['general'] },
+        { value: 'en-IN-PrabhatNeural', label: 'Prabhat (Male)', styles: ['general'] },
+        { value: 'en-IN-RehaanNeural', label: 'Rehaan (Male)', styles: ['general'] },
+    ],
+    'en-KE': [
+        { value: 'en-KE-AsiliaNeural', label: 'Asilia (Female)', styles: ['general'] },
+        { value: 'en-KE-ChilembaNeural', label: 'Chilemba (Male)', styles: ['general'] },
+    ],
+    'en-NG': [
+        { value: 'en-NG-AbeoNeural', label: 'Abeo (Male)', styles: ['general'] },
+        { value: 'en-NG-EzinneNeural', label: 'Ezinne (Female)', styles: ['general'] },
+    ],
+    'en-NZ': [
+        { value: 'en-NZ-MitchellNeural', label: 'Mitchell (Male)', styles: ['general'] },
+        { value: 'en-NZ-MollyNeural', label: 'Molly (Female)', styles: ['general'] },
+    ],
+    'en-PH': [
+        { value: 'en-PH-JamesNeural', label: 'James (Male)', styles: ['general'] },
+        { value: 'en-PH-RosaNeural', label: 'Rosa (Female)', styles: ['general'] },
+    ],
+    'en-SG': [
+        { value: 'en-SG-LunaNeural', label: 'Luna (Female)', styles: ['general'] },
+        { value: 'en-SG-WayneNeural', label: 'Wayne (Male)', styles: ['general'] },
+    ],
+    'en-TZ': [
+        { value: 'en-TZ-ElimuNeural', label: 'Elimu (Male)', styles: ['general'] },
+        { value: 'en-TZ-ImaniNeural', label: 'Imani (Female)', styles: ['general'] },
+    ],
+    'en-US': [
+        { value: 'en-US-AmberNeural', label: 'Amber (Female)', styles: ['general'] },
+        { value: 'en-US-AnaNeural', label: 'Ana (Female, Child)', styles: ['general'] },
+        { value: 'en-US-AndrewNeural', label: 'Andrew (Male)', styles: ['general'] },
+        { value: 'en-US-AriaNeural', label: 'Aria (Female)', styles: ['general'] },
+        { value: 'en-US-AshTurboMultilingualNeural1,4', label: 'AshTurboMultilingual (Male)', styles: ['general'] },
+        { value: 'en-US-AshleyNeural', label: 'Ashley (Female)', styles: ['general'] },
+        { value: 'en-US-AvaNeural', label: 'Ava (Female)', styles: ['general'] },
+        { value: 'en-US-BlueNeural1', label: 'Blue (Neutral)', styles: ['general'] },
+        { value: 'en-US-BrandonNeural', label: 'Brandon (Male)', styles: ['general'] },
+        { value: 'en-US-BrianNeural', label: 'Brian (Male)', styles: ['general'] },
+        { value: 'en-US-ChristopherNeural', label: 'Christopher (Male)', styles: ['general'] },
+        { value: 'en-US-CoraNeural', label: 'Cora (Female)', styles: ['general'] },
+        { value: 'en-US-DavisNeural', label: 'Davis (Male)', styles: ['general'] },
+        { value: 'en-US-ElizabethNeural', label: 'Elizabeth (Female)', styles: ['general'] },
+        { value: 'en-US-EmmaNeural', label: 'Emma (Female)', styles: ['general'] },
+        { value: 'en-US-EricNeural', label: 'Eric (Male)', styles: ['general'] },
+        { value: 'en-US-GuyNeural', label: 'Guy (Male)', styles: ['general'] },
+        { value: 'en-US-JacobNeural', label: 'Jacob (Male)', styles: ['general'] },
+        { value: 'en-US-JaneNeural', label: 'Jane (Female)', styles: ['general'] },
+        { value: 'en-US-JasonNeural', label: 'Jason (Male)', styles: ['general'] },
+        { value: 'en-US-JennyNeural', label: 'Jenny (Female)', styles: ['general'] },
+        { value: 'en-US-KaiNeural', label: 'Kai (Male)', styles: ['general'] },
+        { value: 'en-US-LunaNeural', label: 'Luna (Female)', styles: ['general'] },
+        { value: 'en-US-MichelleNeural', label: 'Michelle (Female)', styles: ['general'] },
+        { value: 'en-US-MonicaNeural', label: 'Monica (Female)', styles: ['general'] },
+        { value: 'en-US-NancyNeural', label: 'Nancy (Female)', styles: ['general'] },
+        { value: 'en-US-RogerNeural', label: 'Roger (Male)', styles: ['general'] },
+        { value: 'en-US-SaraNeural', label: 'Sara (Female)', styles: ['general'] },
+        { value: 'en-US-SteffanNeural', label: 'Steffan (Male)', styles: ['general'] },
+        { value: 'en-US-TonyNeural', label: 'Tony (Male)', styles: ['general'] },
+    ],
+    'en-ZA': [
+        { value: 'en-ZA-LeahNeural', label: 'Leah (Female)', styles: ['general'] },
+        { value: 'en-ZA-LukeNeural', label: 'Luke (Male)', styles: ['general'] },
+    ],
+    'es-AR': [
+        { value: 'es-AR-ElenaNeural', label: 'Elena (Female)', styles: ['general'] },
+        { value: 'es-AR-TomasNeural', label: 'Tomas (Male)', styles: ['general'] },
+    ],
+    'es-BO': [
+        { value: 'es-BO-MarceloNeural', label: 'Marcelo (Male)', styles: ['general'] },
+        { value: 'es-BO-SofiaNeural', label: 'Sofia (Female)', styles: ['general'] },
+    ],
+    'es-CL': [
+        { value: 'es-CL-CatalinaNeural', label: 'Catalina (Female)', styles: ['general'] },
+        { value: 'es-CL-LorenzoNeural', label: 'Lorenzo (Male)', styles: ['general'] },
+    ],
+    'es-CO': [
+        { value: 'es-CO-GonzaloNeural', label: 'Gonzalo (Male)', styles: ['general'] },
+        { value: 'es-CO-SalomeNeural', label: 'Salome (Female)', styles: ['general'] },
+    ],
+    'es-CR': [
+        { value: 'es-CR-JuanNeural', label: 'Juan (Male)', styles: ['general'] },
+        { value: 'es-CR-MariaNeural', label: 'Maria (Female)', styles: ['general'] },
+    ],
+    'es-CU': [
+        { value: 'es-CU-BelkysNeural', label: 'Belkys (Female)', styles: ['general'] },
+        { value: 'es-CU-ManuelNeural', label: 'Manuel (Male)', styles: ['general'] },
+    ],
+    'es-DO': [
+        { value: 'es-DO-EmilioNeural', label: 'Emilio (Male)', styles: ['general'] },
+        { value: 'es-DO-RamonaNeural', label: 'Ramona (Female)', styles: ['general'] },
+    ],
+    'es-EC': [
+        { value: 'es-EC-AndreaNeural', label: 'Andrea (Female)', styles: ['general'] },
+        { value: 'es-EC-LuisNeural', label: 'Luis (Male)', styles: ['general'] },
+    ],
+    'es-ES': [
+        { value: 'es-ES-AbrilNeural', label: 'Abril (Female)', styles: ['general'] },
+        { value: 'es-ES-AlvaroNeural', label: 'Alvaro (Male)', styles: ['general'] },
+        { value: 'es-ES-ArnauNeural', label: 'Arnau (Male)', styles: ['general'] },
+        { value: 'es-ES-DarioNeural', label: 'Dario (Male)', styles: ['general'] },
+        { value: 'es-ES-EliasNeural', label: 'Elias (Male)', styles: ['general'] },
+        { value: 'es-ES-ElviraNeural', label: 'Elvira (Female)', styles: ['general'] },
+        { value: 'es-ES-EstrellaNeural', label: 'Estrella (Female)', styles: ['general'] },
+        { value: 'es-ES-IreneNeural', label: 'Irene (Female)', styles: ['general'] },
+        { value: 'es-ES-LaiaNeural', label: 'Laia (Female)', styles: ['general'] },
+        { value: 'es-ES-LiaNeural', label: 'Lia (Female)', styles: ['general'] },
+        { value: 'es-ES-NilNeural', label: 'Nil (Male)', styles: ['general'] },
+        { value: 'es-ES-SaulNeural', label: 'Saul (Male)', styles: ['general'] },
+        { value: 'es-ES-TeoNeural', label: 'Teo (Male)', styles: ['general'] },
+        { value: 'es-ES-TrianaNeural', label: 'Triana (Female)', styles: ['general'] },
+        { value: 'es-ES-VeraNeural', label: 'Vera (Female)', styles: ['general'] },
+        { value: 'es-ES-XimenaNeural', label: 'Ximena (Female)', styles: ['general'] },
+    ],
+    'es-GQ': [
+        { value: 'es-GQ-JavierNeural', label: 'Javier (Male)', styles: ['general'] },
+        { value: 'es-GQ-TeresaNeural', label: 'Teresa (Female)', styles: ['general'] },
+    ],
+    'es-GT': [
+        { value: 'es-GT-AndresNeural', label: 'Andres (Male)', styles: ['general'] },
+        { value: 'es-GT-MartaNeural', label: 'Marta (Female)', styles: ['general'] },
+    ],
+    'es-HN': [
+        { value: 'es-HN-CarlosNeural', label: 'Carlos (Male)', styles: ['general'] },
+        { value: 'es-HN-KarlaNeural', label: 'Karla (Female)', styles: ['general'] },
+    ],
+    'es-MX': [
+        { value: 'es-MX-BeatrizNeural', label: 'Beatriz (Female)', styles: ['general'] },
+        { value: 'es-MX-CandelaNeural', label: 'Candela (Female)', styles: ['general'] },
+        { value: 'es-MX-CarlotaNeural', label: 'Carlota (Female)', styles: ['general'] },
+        { value: 'es-MX-CecilioNeural', label: 'Cecilio (Male)', styles: ['general'] },
+        { value: 'es-MX-DaliaNeural', label: 'Dalia (Female)', styles: ['general'] },
+        { value: 'es-MX-GerardoNeural', label: 'Gerardo (Male)', styles: ['general'] },
+        { value: 'es-MX-JorgeNeural', label: 'Jorge (Male)', styles: ['general'] },
+        { value: 'es-MX-LarissaNeural', label: 'Larissa (Female)', styles: ['general'] },
+        { value: 'es-MX-LibertoNeural', label: 'Liberto (Male)', styles: ['general'] },
+        { value: 'es-MX-LucianoNeural', label: 'Luciano (Male)', styles: ['general'] },
+        { value: 'es-MX-MarinaNeural', label: 'Marina (Female, Child)', styles: ['general'] },
+        { value: 'es-MX-NuriaNeural', label: 'Nuria (Female)', styles: ['general'] },
+        { value: 'es-MX-PelayoNeural', label: 'Pelayo (Male)', styles: ['general'] },
+        { value: 'es-MX-RenataNeural', label: 'Renata (Female)', styles: ['general'] },
+        { value: 'es-MX-YagoNeural', label: 'Yago (Male)', styles: ['general'] },
+    ],
+    'es-NI': [
+        { value: 'es-NI-FedericoNeural', label: 'Federico (Male)', styles: ['general'] },
+        { value: 'es-NI-YolandaNeural', label: 'Yolanda (Female)', styles: ['general'] },
+    ],
+    'es-PA': [
+        { value: 'es-PA-MargaritaNeural', label: 'Margarita (Female)', styles: ['general'] },
+        { value: 'es-PA-RobertoNeural', label: 'Roberto (Male)', styles: ['general'] },
+    ],
+    'es-PE': [
+        { value: 'es-PE-AlexNeural', label: 'Alex (Male)', styles: ['general'] },
+        { value: 'es-PE-CamilaNeural', label: 'Camila (Female)', styles: ['general'] },
+    ],
+    'es-PR': [
+        { value: 'es-PR-KarinaNeural', label: 'Karina (Female)', styles: ['general'] },
+        { value: 'es-PR-VictorNeural', label: 'Victor (Male)', styles: ['general'] },
+    ],
+    'es-PY': [
+        { value: 'es-PY-MarioNeural', label: 'Mario (Male)', styles: ['general'] },
+        { value: 'es-PY-TaniaNeural', label: 'Tania (Female)', styles: ['general'] },
+    ],
+    'es-SV': [
+        { value: 'es-SV-LorenaNeural', label: 'Lorena (Female)', styles: ['general'] },
+        { value: 'es-SV-RodrigoNeural', label: 'Rodrigo (Male)', styles: ['general'] },
+    ],
+    'es-US': [
+        { value: 'es-US-AlonsoNeural', label: 'Alonso (Male)', styles: ['general'] },
+        { value: 'es-US-PalomaNeural', label: 'Paloma (Female)', styles: ['general'] },
+    ],
+    'es-UY': [
+        { value: 'es-UY-MateoNeural', label: 'Mateo (Male)', styles: ['general'] },
+        { value: 'es-UY-ValentinaNeural', label: 'Valentina (Female)', styles: ['general'] },
+    ],
+    'es-VE': [
+        { value: 'es-VE-PaolaNeural', label: 'Paola (Female)', styles: ['general'] },
+        { value: 'es-VE-SebastianNeural', label: 'Sebastian (Male)', styles: ['general'] },
+    ],
+    'et-EE': [
+        { value: 'et-EE-AnuNeural3', label: 'Anu (Female)', styles: ['general'] },
+        { value: 'et-EE-KertNeural3', label: 'Kert (Male)', styles: ['general'] },
+    ],
+    'eu-ES': [
+        { value: 'eu-ES-AinhoaNeural3', label: 'Ainhoa (Female)', styles: ['general'] },
+        { value: 'eu-ES-AnderNeural3', label: 'Ander (Male)', styles: ['general'] },
+    ],
+    'fa-IR': [
+        { value: 'fa-IR-DilaraNeural3', label: 'Dilara (Female)', styles: ['general'] },
+        { value: 'fa-IR-FaridNeural3', label: 'Farid (Male)', styles: ['general'] },
+    ],
+    'fi-FI': [
+        { value: 'fi-FI-HarriNeural', label: 'Harri (Male)', styles: ['general'] },
+        { value: 'fi-FI-NooraNeural', label: 'Noora (Female)', styles: ['general'] },
+        { value: 'fi-FI-SelmaNeural', label: 'Selma (Female)', styles: ['general'] },
+    ],
+    'fil-PH': [
+        { value: 'fil-PH-AngeloNeural3', label: 'Angelo (Male)', styles: ['general'] },
+        { value: 'fil-PH-BlessicaNeural3', label: 'Blessica (Female)', styles: ['general'] },
+    ],
+    'fr-BE': [
+        { value: 'fr-BE-CharlineNeural', label: 'Charline (Female)', styles: ['general'] },
+        { value: 'fr-BE-GerardNeural', label: 'Gerard (Male)', styles: ['general'] },
+    ],
+    'fr-CA': [
+        { value: 'fr-CA-AntoineNeural', label: 'Antoine (Male)', styles: ['general'] },
+        { value: 'fr-CA-JeanNeural', label: 'Jean (Male)', styles: ['general'] },
+        { value: 'fr-CA-SylvieNeural', label: 'Sylvie (Female)', styles: ['general'] },
+        { value: 'fr-CA-ThierryNeural', label: 'Thierry (Male)', styles: ['general'] },
+    ],
+    'fr-CH': [
+        { value: 'fr-CH-ArianeNeural', label: 'Ariane (Female)', styles: ['general'] },
+        { value: 'fr-CH-FabriceNeural', label: 'Fabrice (Male)', styles: ['general'] },
+    ],
+    'fr-FR': [
+        { value: 'fr-FR-AlainNeural', label: 'Alain (Male)', styles: ['general'] },
+        { value: 'fr-FR-BrigitteNeural', label: 'Brigitte (Female)', styles: ['general'] },
+        { value: 'fr-FR-CelesteNeural', label: 'Celeste (Female)', styles: ['general'] },
+        { value: 'fr-FR-ClaudeNeural', label: 'Claude (Male)', styles: ['general'] },
+        { value: 'fr-FR-CoralieNeural', label: 'Coralie (Female)', styles: ['general'] },
+        { value: 'fr-FR-DeniseNeural', label: 'Denise (Female)', styles: ['general'] },
+        { value: 'fr-FR-EloiseNeural', label: 'Eloise (Female, Child)', styles: ['general'] },
+        { value: 'fr-FR-HenriNeural', label: 'Henri (Male)', styles: ['general'] },
+        { value: 'fr-FR-JacquelineNeural', label: 'Jacqueline (Female)', styles: ['general'] },
+        { value: 'fr-FR-JeromeNeural', label: 'Jerome (Male)', styles: ['general'] },
+        { value: 'fr-FR-JosephineNeural', label: 'Josephine (Female)', styles: ['general'] },
+        { value: 'fr-FR-MauriceNeural', label: 'Maurice (Male)', styles: ['general'] },
+        { value: 'fr-FR-YvesNeural', label: 'Yves (Male)', styles: ['general'] },
+        { value: 'fr-FR-YvetteNeural', label: 'Yvette (Female)', styles: ['general'] },
+    ],
+    'ga-IE': [
+        { value: 'ga-IE-ColmNeural3', label: 'Colm (Male)', styles: ['general'] },
+        { value: 'ga-IE-OrlaNeural3', label: 'Orla (Female)', styles: ['general'] },
+    ],
+    'gl-ES': [
+        { value: 'gl-ES-RoiNeural3', label: 'Roi (Male)', styles: ['general'] },
+        { value: 'gl-ES-SabelaNeural3', label: 'Sabela (Female)', styles: ['general'] },
+    ],
+    'gu-IN': [
+        { value: 'gu-IN-DhwaniNeural', label: 'Dhwani (Female)', styles: ['general'] },
+        { value: 'gu-IN-NiranjanNeural', label: 'Niranjan (Male)', styles: ['general'] },
+    ],
+    'he-IL': [
+        { value: 'he-IL-AvriNeural', label: 'Avri (Male)', styles: ['general'] },
+        { value: 'he-IL-HilaNeural', label: 'Hila (Female)', styles: ['general'] },
+    ],
+    'hi-IN': [
+        { value: 'hi-IN-AaravNeural', label: 'Aarav (Male)', styles: ['general'] },
+        { value: 'hi-IN-AartiNeural', label: 'Aarti (Female)', styles: ['general'] },
+        { value: 'hi-IN-AnanyaNeural', label: 'Ananya (Female)', styles: ['general'] },
+        { value: 'hi-IN-ArjunNeural', label: 'Arjun (Male)', styles: ['general'] },
+        { value: 'hi-IN-KavyaNeural', label: 'Kavya (Female)', styles: ['general'] },
+        { value: 'hi-IN-KunalNeural', label: 'Kunal (Male)', styles: ['general'] },
+        { value: 'hi-IN-MadhurNeural', label: 'Madhur (Male)', styles: ['general'] },
+        { value: 'hi-IN-RehaanNeural', label: 'Rehaan (Male)', styles: ['general'] },
+        { value: 'hi-IN-SwaraNeural', label: 'Swara (Female)', styles: ['general'] },
+    ],
+    'hr-HR': [
+        { value: 'hr-HR-GabrijelaNeural', label: 'Gabrijela (Female)', styles: ['general'] },
+        { value: 'hr-HR-SreckoNeural', label: 'Srecko (Male)', styles: ['general'] },
+    ],
+    'hu-HU': [
+        { value: 'hu-HU-NoemiNeural', label: 'Noemi (Female)', styles: ['general'] },
+        { value: 'hu-HU-TamasNeural', label: 'Tamas (Male)', styles: ['general'] },
+    ],
+    'hy-AM': [
+        { value: 'hy-AM-AnahitNeural3', label: 'Anahit (Female)', styles: ['general'] },
+        { value: 'hy-AM-HaykNeural3', label: 'Hayk (Male)', styles: ['general'] },
+    ],
+    'id-ID': [
+        { value: 'id-ID-ArdiNeural', label: 'Ardi (Male)', styles: ['general'] },
+        { value: 'id-ID-GadisNeural', label: 'Gadis (Female)', styles: ['general'] },
+    ],
+    'is-IS': [
+        { value: 'is-IS-GudrunNeural3', label: 'Gudrun (Female)', styles: ['general'] },
+        { value: 'is-IS-GunnarNeural3', label: 'Gunnar (Male)', styles: ['general'] },
+    ],
+    'it-IT': [
+        { value: 'it-IT-BenignoNeural', label: 'Benigno (Male)', styles: ['general'] },
+        { value: 'it-IT-CalimeroNeural', label: 'Calimero (Male)', styles: ['general'] },
+        { value: 'it-IT-CataldoNeural', label: 'Cataldo (Male)', styles: ['general'] },
+        { value: 'it-IT-DiegoNeural', label: 'Diego (Male)', styles: ['general'] },
+        { value: 'it-IT-ElsaNeural', label: 'Elsa (Female)', styles: ['general'] },
+        { value: 'it-IT-FabiolaNeural', label: 'Fabiola (Female)', styles: ['general'] },
+        { value: 'it-IT-FiammaNeural', label: 'Fiamma (Female)', styles: ['general'] },
+        { value: 'it-IT-GianniNeural', label: 'Gianni (Male)', styles: ['general'] },
+        { value: 'it-IT-GiuseppeNeural', label: 'Giuseppe (Male)', styles: ['general'] },
+        { value: 'it-IT-ImeldaNeural', label: 'Imelda (Female)', styles: ['general'] },
+        { value: 'it-IT-IrmaNeural', label: 'Irma (Female)', styles: ['general'] },
+        { value: 'it-IT-IsabellaNeural', label: 'Isabella (Female)', styles: ['general'] },
+        { value: 'it-IT-LisandroNeural', label: 'Lisandro (Male)', styles: ['general'] },
+        { value: 'it-IT-PalmiraNeural', label: 'Palmira (Female)', styles: ['general'] },
+        { value: 'it-IT-PierinaNeural', label: 'Pierina (Female, Child)', styles: ['general'] },
+        { value: 'it-IT-RinaldoNeural', label: 'Rinaldo (Male)', styles: ['general'] },
+    ],
+    'ja-JP': [
+        { value: 'ja-JP-AoiNeural', label: 'Aoi (Female)', styles: ['general'] },
+        { value: 'ja-JP-DaichiNeural', label: 'Daichi (Male)', styles: ['general'] },
+        { value: 'ja-JP-KeitaNeural', label: 'Keita (Male)', styles: ['general'] },
+        { value: 'ja-JP-MasaruMultilingualNeural1,4', label: 'MasaruMultilingual (Male)', styles: ['general'] },
+        { value: 'ja-JP-MayuNeural', label: 'Mayu (Female)', styles: ['general'] },
+        { value: 'ja-JP-NanamiNeural', label: 'Nanami (Female)', styles: ['general'] },
+        { value: 'ja-JP-NaokiNeural', label: 'Naoki (Male)', styles: ['general'] },
+        { value: 'ja-JP-ShioriNeural', label: 'Shiori (Female)', styles: ['general'] },
+    ],
+    'jv-ID': [
+        { value: 'jv-ID-DimasNeural3', label: 'Dimas (Male)', styles: ['general'] },
+        { value: 'jv-ID-SitiNeural3', label: 'Siti (Female)', styles: ['general'] },
+    ],
+    'ka-GE': [
+        { value: 'ka-GE-EkaNeural3', label: 'Eka (Female)', styles: ['general'] },
+        { value: 'ka-GE-GiorgiNeural3', label: 'Giorgi (Male)', styles: ['general'] },
+    ],
+    'kk-KZ': [
+        { value: 'kk-KZ-AigulNeural3', label: 'Aigul (Female)', styles: ['general'] },
+        { value: 'kk-KZ-DauletNeural3', label: 'Daulet (Male)', styles: ['general'] },
+    ],
+    'km-KH': [
+        { value: 'km-KH-PisethNeural3', label: 'Piseth (Male)', styles: ['general'] },
+        { value: 'km-KH-SreymomNeural3', label: 'Sreymom (Female)', styles: ['general'] },
+    ],
+    'kn-IN': [
+        { value: 'kn-IN-GaganNeural3', label: 'Gagan (Male)', styles: ['general'] },
+        { value: 'kn-IN-SapnaNeural3', label: 'Sapna (Female)', styles: ['general'] },
+    ],
+    'ko-KR': [
+        { value: 'ko-KR-BongJinNeural', label: 'BongJin (Male)', styles: ['general'] },
+        { value: 'ko-KR-GookMinNeural', label: 'GookMin (Male)', styles: ['general'] },
+        { value: 'ko-KR-HyunsuNeural', label: 'Hyunsu (Male)', styles: ['general'] },
+        { value: 'ko-KR-InJoonNeural', label: 'InJoon (Male)', styles: ['general'] },
+        { value: 'ko-KR-JiMinNeural', label: 'JiMin (Female)', styles: ['general'] },
+        { value: 'ko-KR-SeoHyeonNeural', label: 'SeoHyeon (Female)', styles: ['general'] },
+        { value: 'ko-KR-SoonBokNeural', label: 'SoonBok (Female)', styles: ['general'] },
+        { value: 'ko-KR-SunHiNeural', label: 'SunHi (Female)', styles: ['general'] },
+        { value: 'ko-KR-YuJinNeural', label: 'YuJin (Female)', styles: ['general'] },
+    ],
+    'lo-LA': [
+        { value: 'lo-LA-ChanthavongNeural3', label: 'Chanthavong (Male)', styles: ['general'] },
+        { value: 'lo-LA-KeomanyNeural3', label: 'Keomany (Female)', styles: ['general'] },
+    ],
+    'lt-LT': [
+        { value: 'lt-LT-LeonasNeural3', label: 'Leonas (Male)', styles: ['general'] },
+        { value: 'lt-LT-OnaNeural3', label: 'Ona (Female)', styles: ['general'] },
+    ],
+    'lv-LV': [
+        { value: 'lv-LV-EveritaNeural3', label: 'Everita (Female)', styles: ['general'] },
+        { value: 'lv-LV-NilsNeural3', label: 'Nils (Male)', styles: ['general'] },
+    ],
+    'mk-MK': [
+        { value: 'mk-MK-AleksandarNeural3', label: 'Aleksandar (Male)', styles: ['general'] },
+        { value: 'mk-MK-MarijaNeural3', label: 'Marija (Female)', styles: ['general'] },
+    ],
+    'ml-IN': [
+        { value: 'ml-IN-MidhunNeural3', label: 'Midhun (Male)', styles: ['general'] },
+        { value: 'ml-IN-SobhanaNeural3', label: 'Sobhana (Female)', styles: ['general'] },
+    ],
+    'mn-MN': [
+        { value: 'mn-MN-BataaNeural3', label: 'Bataa (Male)', styles: ['general'] },
+        { value: 'mn-MN-YesuiNeural3', label: 'Yesui (Female)', styles: ['general'] },
+    ],
+    'mr-IN': [
+        { value: 'mr-IN-AarohiNeural', label: 'Aarohi (Female)', styles: ['general'] },
+        { value: 'mr-IN-ManoharNeural', label: 'Manohar (Male)', styles: ['general'] },
+    ],
+    'ms-MY': [
+        { value: 'ms-MY-OsmanNeural', label: 'Osman (Male)', styles: ['general'] },
+        { value: 'ms-MY-YasminNeural', label: 'Yasmin (Female)', styles: ['general'] },
+    ],
+    'mt-MT': [
+        { value: 'mt-MT-GraceNeural3', label: 'Grace (Female)', styles: ['general'] },
+        { value: 'mt-MT-JosephNeural3', label: 'Joseph (Male)', styles: ['general'] },
+    ],
+    'my-MM': [
+        { value: 'my-MM-NilarNeural3', label: 'Nilar (Female)', styles: ['general'] },
+        { value: 'my-MM-ThihaNeural3', label: 'Thiha (Male)', styles: ['general'] },
+    ],
+    'nb-NO': [
+        { value: 'nb-NO-FinnNeural', label: 'Finn (Male)', styles: ['general'] },
+        { value: 'nb-NO-IselinNeural', label: 'Iselin (Female)', styles: ['general'] },
+        { value: 'nb-NO-PernilleNeural', label: 'Pernille (Female)', styles: ['general'] },
+    ],
+    'ne-NP': [
+        { value: 'ne-NP-HemkalaNeural3', label: 'Hemkala (Female)', styles: ['general'] },
+        { value: 'ne-NP-SagarNeural3', label: 'Sagar (Male)', styles: ['general'] },
+    ],
+    'nl-BE': [
+        { value: 'nl-BE-ArnaudNeural', label: 'Arnaud (Male)', styles: ['general'] },
+        { value: 'nl-BE-DenaNeural', label: 'Dena (Female)', styles: ['general'] },
+    ],
+    'nl-NL': [
+        { value: 'nl-NL-ColetteNeural', label: 'Colette (Female)', styles: ['general'] },
+        { value: 'nl-NL-FennaNeural', label: 'Fenna (Female)', styles: ['general'] },
+        { value: 'nl-NL-MaartenNeural', label: 'Maarten (Male)', styles: ['general'] },
+    ],
+    'or-IN': [
+        { value: 'or-IN-SubhasiniNeural3', label: 'Subhasini (Female)', styles: ['general'] },
+        { value: 'or-IN-SukantNeural3', label: 'Sukant (Male)', styles: ['general'] },
+    ],
+    'pa-IN': [
+        { value: 'pa-IN-OjasNeural3', label: 'Ojas (Male)', styles: ['general'] },
+        { value: 'pa-IN-VaaniNeural3', label: 'Vaani (Female)', styles: ['general'] },
+    ],
+    'pl-PL': [
+        { value: 'pl-PL-AgnieszkaNeural', label: 'Agnieszka (Female)', styles: ['general'] },
+        { value: 'pl-PL-MarekNeural', label: 'Marek (Male)', styles: ['general'] },
+        { value: 'pl-PL-ZofiaNeural', label: 'Zofia (Female)', styles: ['general'] },
+    ],
+    'ps-AF': [
+        { value: 'ps-AF-GulNawazNeural3', label: 'GulNawaz (Male)', styles: ['general'] },
+        { value: 'ps-AF-LatifaNeural3', label: 'Latifa (Female)', styles: ['general'] },
+    ],
+    'pt-BR': [
+        { value: 'pt-BR-AntonioNeural', label: 'Antonio (Male)', styles: ['general'] },
+        { value: 'pt-BR-BrendaNeural', label: 'Brenda (Female)', styles: ['general'] },
+        { value: 'pt-BR-DonatoNeural', label: 'Donato (Male)', styles: ['general'] },
+        { value: 'pt-BR-ElzaNeural', label: 'Elza (Female)', styles: ['general'] },
+        { value: 'pt-BR-FabioNeural', label: 'Fabio (Male)', styles: ['general'] },
+        { value: 'pt-BR-FranciscaNeural', label: 'Francisca (Female)', styles: ['general'] },
+        { value: 'pt-BR-GiovannaNeural', label: 'Giovanna (Female)', styles: ['general'] },
+        { value: 'pt-BR-HumbertoNeural', label: 'Humberto (Male)', styles: ['general'] },
+        { value: 'pt-BR-JulioNeural', label: 'Julio (Male)', styles: ['general'] },
+        { value: 'pt-BR-LeilaNeural', label: 'Leila (Female)', styles: ['general'] },
+        { value: 'pt-BR-LeticiaNeural', label: 'Leticia (Female, Child)', styles: ['general'] },
+        { value: 'pt-BR-ManuelaNeural', label: 'Manuela (Female)', styles: ['general'] },
+        { value: 'pt-BR-NicolauNeural', label: 'Nicolau (Male)', styles: ['general'] },
+        { value: 'pt-BR-ThalitaNeural', label: 'Thalita (Female)', styles: ['general'] },
+        { value: 'pt-BR-ValerioNeural', label: 'Valerio (Male)', styles: ['general'] },
+        { value: 'pt-BR-YaraNeural', label: 'Yara (Female)', styles: ['general'] },
+    ],
+    'pt-PT': [
+        { value: 'pt-PT-DuarteNeural', label: 'Duarte (Male)', styles: ['general'] },
+        { value: 'pt-PT-FernandaNeural', label: 'Fernanda (Female)', styles: ['general'] },
+        { value: 'pt-PT-RaquelNeural', label: 'Raquel (Female)', styles: ['general'] },
+    ],
+    'ro-RO': [
+        { value: 'ro-RO-AlinaNeural', label: 'Alina (Female)', styles: ['general'] },
+        { value: 'ro-RO-EmilNeural', label: 'Emil (Male)', styles: ['general'] },
+    ],
+    'ru-RU': [
+        { value: 'ru-RU-DariyaNeural', label: 'Dariya (Female)', styles: ['general'] },
+        { value: 'ru-RU-DmitryNeural', label: 'Dmitry (Male)', styles: ['general'] },
+        { value: 'ru-RU-SvetlanaNeural', label: 'Svetlana (Female)', styles: ['general'] },
+    ],
+    'si-LK': [
+        { value: 'si-LK-SameeraNeural3', label: 'Sameera (Male)', styles: ['general'] },
+        { value: 'si-LK-ThiliniNeural3', label: 'Thilini (Female)', styles: ['general'] },
+    ],
+    'sk-SK': [
+        { value: 'sk-SK-LukasNeural', label: 'Lukas (Male)', styles: ['general'] },
+        { value: 'sk-SK-ViktoriaNeural', label: 'Viktoria (Female)', styles: ['general'] },
+    ],
+    'sl-SI': [
+        { value: 'sl-SI-PetraNeural', label: 'Petra (Female)', styles: ['general'] },
+        { value: 'sl-SI-RokNeural', label: 'Rok (Male)', styles: ['general'] },
+    ],
+    'so-SO': [
+        { value: 'so-SO-MuuseNeural3', label: 'Muuse (Male)', styles: ['general'] },
+        { value: 'so-SO-UbaxNeural3', label: 'Ubax (Female)', styles: ['general'] },
+    ],
+    'sq-AL': [
+        { value: 'sq-AL-AnilaNeural3', label: 'Anila (Female)', styles: ['general'] },
+        { value: 'sq-AL-IlirNeural3', label: 'Ilir (Male)', styles: ['general'] },
+    ],
+    'sr-RS': [
+        { value: 'sr-RS-NicholasNeural3', label: 'Nicholas (Male)', styles: ['general'] },
+        { value: 'sr-RS-SophieNeural3', label: 'Sophie (Female)', styles: ['general'] },
+    ],
+    'su-ID': [
+        { value: 'su-ID-JajangNeural3', label: 'Jajang (Male)', styles: ['general'] },
+        { value: 'su-ID-TutiNeural3', label: 'Tuti (Female)', styles: ['general'] },
+    ],
+    'sv-SE': [
+        { value: 'sv-SE-HilleviNeural', label: 'Hillevi (Female)', styles: ['general'] },
+        { value: 'sv-SE-MattiasNeural', label: 'Mattias (Male)', styles: ['general'] },
+        { value: 'sv-SE-SofieNeural', label: 'Sofie (Female)', styles: ['general'] },
+    ],
+    'sw-KE': [
+        { value: 'sw-KE-RafikiNeural3', label: 'Rafiki (Male)', styles: ['general'] },
+        { value: 'sw-KE-ZuriNeural3', label: 'Zuri (Female)', styles: ['general'] },
+    ],
+    'sw-TZ': [
+        { value: 'sw-TZ-DaudiNeural', label: 'Daudi (Male)', styles: ['general'] },
+        { value: 'sw-TZ-RehemaNeural', label: 'Rehema (Female)', styles: ['general'] },
+    ],
+    'ta-IN': [
+        { value: 'ta-IN-PallaviNeural', label: 'Pallavi (Female)', styles: ['general'] },
+        { value: 'ta-IN-ValluvarNeural', label: 'Valluvar (Male)', styles: ['general'] },
+    ],
+    'ta-LK': [
+        { value: 'ta-LK-KumarNeural', label: 'Kumar (Male)', styles: ['general'] },
+        { value: 'ta-LK-SaranyaNeural', label: 'Saranya (Female)', styles: ['general'] },
+    ],
+    'ta-MY': [
+        { value: 'ta-MY-KaniNeural', label: 'Kani (Female)', styles: ['general'] },
+        { value: 'ta-MY-SuryaNeural', label: 'Surya (Male)', styles: ['general'] },
+    ],
+    'ta-SG': [
+        { value: 'ta-SG-AnbuNeural', label: 'Anbu (Male)', styles: ['general'] },
+        { value: 'ta-SG-VenbaNeural', label: 'Venba (Female)', styles: ['general'] },
+    ],
+    'te-IN': [
+        { value: 'te-IN-MohanNeural', label: 'Mohan (Male)', styles: ['general'] },
+        { value: 'te-IN-ShrutiNeural', label: 'Shruti (Female)', styles: ['general'] },
+    ],
+    'th-TH': [
+        { value: 'th-TH-AcharaNeural', label: 'Achara (Female)', styles: ['general'] },
+        { value: 'th-TH-NiwatNeural', label: 'Niwat (Male)', styles: ['general'] },
+        { value: 'th-TH-PremwadeeNeural', label: 'Premwadee (Female)', styles: ['general'] },
+    ],
+    'tr-TR': [
+        { value: 'tr-TR-AhmetNeural', label: 'Ahmet (Male)', styles: ['general'] },
+        { value: 'tr-TR-EmelNeural', label: 'Emel (Female)', styles: ['general'] },
+    ],
+    'uk-UA': [
+        { value: 'uk-UA-OstapNeural', label: 'Ostap (Male)', styles: ['general'] },
+        { value: 'uk-UA-PolinaNeural', label: 'Polina (Female)', styles: ['general'] },
+    ],
+    'ur-IN': [
+        { value: 'ur-IN-GulNeural', label: 'Gul (Female)', styles: ['general'] },
+        { value: 'ur-IN-SalmanNeural', label: 'Salman (Male)', styles: ['general'] },
+    ],
+    'ur-PK': [
+        { value: 'ur-PK-AsadNeural', label: 'Asad (Male)', styles: ['general'] },
+        { value: 'ur-PK-UzmaNeural', label: 'Uzma (Female)', styles: ['general'] },
+    ],
+    'uz-UZ': [
+        { value: 'uz-UZ-MadinaNeural3', label: 'Madina (Female)', styles: ['general'] },
+        { value: 'uz-UZ-SardorNeural3', label: 'Sardor (Male)', styles: ['general'] },
+    ],
+    'vi-VN': [
+        { value: 'vi-VN-HoaiMyNeural', label: 'HoaiMy (Female)', styles: ['general'] },
+        { value: 'vi-VN-NamMinhNeural', label: 'NamMinh (Male)', styles: ['general'] },
+    ],
+    'wuu-CN': [
+        { value: 'wuu-CN-XiaotongNeural3', label: 'Xiaotong (Female)', styles: ['general'] },
+        { value: 'wuu-CN-YunzheNeural3', label: 'Yunzhe (Male)', styles: ['general'] },
+    ],
+    'yue-CN': [
+        { value: 'yue-CN-XiaoMinNeural3', label: 'XiaoMin (Female)', styles: ['general'] },
+        { value: 'yue-CN-YunSongNeural3', label: 'YunSong (Male)', styles: ['general'] },
+    ],
+    'zh-CN': [
+        { value: 'zh-CN-XiaochenNeural', label: 'Xiaochen (Female)', styles: ['general'] },
+        { value: 'zh-CN-XiaohanNeural', label: 'Xiaohan (Female)', styles: ['general'] },
+        { value: 'zh-CN-XiaomengNeural', label: 'Xiaomeng (Female)', styles: ['general'] },
+        { value: 'zh-CN-XiaomoNeural', label: 'Xiaomo (Female)', styles: ['general'] },
+        { value: 'zh-CN-XiaoqiuNeural', label: 'Xiaoqiu (Female)', styles: ['general'] },
+        { value: 'zh-CN-XiaorouNeural', label: 'Xiaorou (Female)', styles: ['general'] },
+        { value: 'zh-CN-XiaoruiNeural', label: 'Xiaorui (Female)', styles: ['general'] },
+        { value: 'zh-CN-XiaoshuangNeural', label: 'Xiaoshuang (Female, Child)', styles: ['general'] },
+        { value: 'zh-CN-XiaoxiaoDialectsNeural', label: 'XiaoxiaoDialects (Female)', styles: ['general'] },
+        { value: 'zh-CN-XiaoxiaoNeural', label: 'Xiaoxiao (Female)', styles: ['general'] },
+        { value: 'zh-CN-XiaoyanNeural', label: 'Xiaoyan (Female)', styles: ['general'] },
+        { value: 'zh-CN-XiaoyiNeural', label: 'Xiaoyi (Female)', styles: ['general'] },
+        { value: 'zh-CN-XiaoyouNeural', label: 'Xiaoyou (Female, Child)', styles: ['general'] },
+        { value: 'zh-CN-XiaozhenNeural', label: 'Xiaozhen (Female)', styles: ['general'] },
+        { value: 'zh-CN-YunfengNeural', label: 'Yunfeng (Male)', styles: ['general'] },
+        { value: 'zh-CN-YunhaoNeural', label: 'Yunhao (Male)', styles: ['general'] },
+        { value: 'zh-CN-YunjianNeural', label: 'Yunjian (Male)', styles: ['general'] },
+        { value: 'zh-CN-YunjieNeural', label: 'Yunjie (Male)', styles: ['general'] },
+        { value: 'zh-CN-YunxiNeural', label: 'Yunxi (Male)', styles: ['general'] },
+        { value: 'zh-CN-YunxiaNeural', label: 'Yunxia (Male)', styles: ['general'] },
+        { value: 'zh-CN-YunyangNeural', label: 'Yunyang (Male)', styles: ['general'] },
+        { value: 'zh-CN-YunyeNeural', label: 'Yunye (Male)', styles: ['general'] },
+        { value: 'zh-CN-YunzeNeural', label: 'Yunze (Male)', styles: ['general'] },
+        { value: 'zh-CN-guangxi-YunqiNeural1,3', label: 'Yunqi (Male)', styles: ['general'] },
+        { value: 'zh-CN-henan-YundengNeural3', label: 'Yundeng (Male)', styles: ['general'] },
+        { value: 'zh-CN-shandong-YunxiangNeural3', label: 'Yunxiang (Male)', styles: ['general'] },
+        { value: 'zh-CN-sichuan-YunxiNeural1,3', label: 'Yunxi (Male)', styles: ['general'] },
+    ],
+    'zh-HK': [
+        { value: 'zh-HK-HiuGaaiNeural', label: 'HiuGaai (Female)', styles: ['general'] },
+        { value: 'zh-HK-HiuMaanNeural', label: 'HiuMaan (Female)', styles: ['general'] },
+        { value: 'zh-HK-WanLungNeural', label: 'WanLung (Male)', styles: ['general'] },
+    ],
+    'zh-TW': [
+        { value: 'zh-TW-HsiaoChenNeural', label: 'HsiaoChen (Female)', styles: ['general'] },
+        { value: 'zh-TW-HsiaoYuNeural', label: 'HsiaoYu (Female)', styles: ['general'] },
+        { value: 'zh-TW-YunJheNeural', label: 'YunJhe (Male)', styles: ['general'] },
+    ],
+    'zu-ZA': [
+        { value: 'zu-ZA-ThandoNeural3', label: 'Thando (Female)', styles: ['general'] },
+        { value: 'zu-ZA-ThembaNeural3', label: 'Themba (Male)', styles: ['general'] },
+    ],
+};
 
     // Edge TTS 完整语音列表（从 edge-tts 实时拉取，包含所有 Neural 高质量语音）
     const edgeVoicesByLanguage = {
-        'zh-CN': [
-            { value: 'zh-CN-XiaoxiaoNeural', label: 'Xiaoxiao (Female)' },
-            { value: 'zh-CN-XiaoyiNeural',   label: 'Xiaoyi (Female)' },
-            { value: 'zh-CN-YunjianNeural',  label: 'Yunjian (Male)' },
-            { value: 'zh-CN-YunxiNeural',    label: 'Yunxi (Male)' },
-            { value: 'zh-CN-YunxiaNeural',   label: 'Yunxia (Male)' },
-            { value: 'zh-CN-YunyangNeural',  label: 'Yunyang (Male)' },
-            { value: 'zh-CN-liaoning-XiaobeiNeural', label: 'Xiaobei (Female)' },
-            { value: 'zh-CN-shaanxi-XiaoniNeural', label: 'Xiaoni (Female)' },
-        ],
-        'zh-TW': [
-            { value: 'zh-TW-HsiaoChenNeural', label: 'HsiaoChen (Female)' },
-            { value: 'zh-TW-YunJheNeural', label: 'YunJhe (Male)' },
-            { value: 'zh-TW-HsiaoYuNeural', label: 'HsiaoYu (Female)' },
-        ],
-        'zh-HK': [
-            { value: 'zh-HK-HiuGaaiNeural', label: 'HiuGaai (Female)' },
-            { value: 'zh-HK-HiuMaanNeural', label: 'HiuMaan (Female)' },
-            { value: 'zh-HK-WanLungNeural', label: 'WanLung (Male)' },
-        ],
-        'en-US': [
-            { value: 'en-US-AvaNeural',                  label: 'Ava (Female)' },
-            { value: 'en-US-AvaMultilingualNeural',      label: 'Ava (Female)' },
-            { value: 'en-US-AndrewNeural',               label: 'Andrew (Male)' },
-            { value: 'en-US-AndrewMultilingualNeural',   label: 'Andrew (Male)' },
-            { value: 'en-US-EmmaNeural',                 label: 'Emma (Female)' },
-            { value: 'en-US-EmmaMultilingualNeural',     label: 'Emma (Female)' },
-            { value: 'en-US-BrianNeural',                label: 'Brian (Male)' },
-            { value: 'en-US-BrianMultilingualNeural',    label: 'Brian (Male)' },
-            { value: 'en-US-AnaNeural',                  label: 'Ana (Female)' },
-            { value: 'en-US-AriaNeural',                 label: 'Aria (Female)' },
-            { value: 'en-US-ChristopherNeural',          label: 'Christopher (Male)' },
-            { value: 'en-US-EricNeural',                 label: 'Eric (Male)' },
-            { value: 'en-US-GuyNeural',                  label: 'Guy (Male)' },
-            { value: 'en-US-JennyNeural',                label: 'Jenny (Female)' },
-            { value: 'en-US-MichelleNeural',             label: 'Michelle (Female)' },
-            { value: 'en-US-RogerNeural',                label: 'Roger (Male)' },
-            { value: 'en-US-SteffanNeural',              label: 'Steffan (Male)' },
-        ],
-        'en-GB': [
-            { value: 'en-GB-LibbyNeural',   label: 'Libby (Female)' },
-            { value: 'en-GB-MaisieNeural',  label: 'Maisie (Female)' },
-            { value: 'en-GB-RyanNeural',    label: 'Ryan (Male)' },
-            { value: 'en-GB-SoniaNeural',   label: 'Sonia (Female)' },
-            { value: 'en-GB-ThomasNeural',  label: 'Thomas (Male)' },
-        ],
-        'en-AU': [
-            { value: 'en-AU-NatashaNeural', label: 'Natasha (Female)' },
-            { value: 'en-AU-WilliamNeural', label: 'William (Male)' },
-        ],
-        'en-CA': [
-            { value: 'en-CA-ClaraNeural', label: 'Clara (Female)' },
-            { value: 'en-CA-LiamNeural', label: 'Liam (Male)' },
-        ],
-        'en-IN': [
-            { value: 'en-IN-NeerjaNeural', label: 'Neerja (Female)' },
-            { value: 'en-IN-PrabhatNeural', label: 'Prabhat (Male)' },
-        ],
-        'ja-JP': [
-            { value: 'ja-JP-NanamiNeural',  label: 'Nanami (Female)' },
-            { value: 'ja-JP-KeitaNeural',   label: 'Keita (Male)' },
-            { value: 'ja-JP-AoiNeural', label: 'Aoi (Female)' },
-            { value: 'ja-JP-DaichiNeural', label: 'Daichi (Male)' },
-            { value: 'ja-JP-MayuNeural', label: 'Mayu (Female)' },
-            { value: 'ja-JP-NaokiNeural', label: 'Naoki (Male)' },
-            { value: 'ja-JP-ShioriNeural', label: 'Shiori (Female)' },
-        ],
-        'ko-KR': [
-            { value: 'ko-KR-SunHiNeural', label: 'Sun-Hi (Female)' },
-            { value: 'ko-KR-InJoonNeural', label: 'InJoon (Male)' },
-            { value: 'ko-KR-HyunsuNeural', label: 'Hyunsu (Male)' },
-            { value: 'ko-KR-SoonBokNeural', label: 'SoonBok (Female)' },
-        ],
-        'es-ES': [
-            { value: 'es-ES-ElviraNeural', label: 'Elvira (Female)' },
-            { value: 'es-ES-AlvaroNeural', label: 'Alvaro (Male)' },
-            { value: 'es-ES-AbrilNeural', label: 'Abril (Female)' },
-            { value: 'es-ES-ArnauNeural', label: 'Arnau (Male)' },
-            { value: 'es-ES-DarioNeural', label: 'Dario (Male)' },
-            { value: 'es-ES-EliasNeural', label: 'Elias (Male)' },
-            { value: 'es-ES-EstrellaNeural', label: 'Estrella (Female)' },
-            { value: 'es-ES-IreneNeural', label: 'Irene (Female)' },
-            { value: 'es-ES-LauraNeural', label: 'Laura (Female)' },
-            { value: 'es-ES-LiaNeural', label: 'Lia (Female)' },
-        ],
-        'es-MX': [
-            { value: 'es-MX-DaliaNeural', label: 'Dalia (Female)' },
-            { value: 'es-MX-JorgeNeural', label: 'Jorge (Male)' },
-            { value: 'es-MX-BeatrizNeural', label: 'Beatriz (Female)' },
-            { value: 'es-MX-CandelaNeural', label: 'Candela (Female)' },
-            { value: 'es-MX-CarlotaNeural', label: 'Carlota (Female)' },
-            { value: 'es-MX-CecilioNeural', label: 'Cecilio (Male)' },
-            { value: 'es-MX-GerardoNeural', label: 'Gerardo (Male)' },
-            { value: 'es-MX-LarissaNeural', label: 'Larissa (Female)' },
-            { value: 'es-MX-LibertoNeural', label: 'Liberto (Male)' },
-            { value: 'es-MX-LucianoNeural', label: 'Luciano (Male)' },
-            { value: 'es-MX-MarinaNeural', label: 'Marina (Female)' },
-            { value: 'es-MX-NuriaNeural', label: 'Nuria (Female)' },
-            { value: 'es-MX-PelayoNeural', label: 'Pelayo (Male)' },
-            { value: 'es-MX-RenataNeural', label: 'Renata (Female)' },
-            { value: 'es-MX-YagoNeural', label: 'Yago (Male)' },
-        ],
-        'fr-FR': [
-            { value: 'fr-FR-VivienneMultilingualNeural', label: 'Vivienne (Female)' },
-            { value: 'fr-FR-RemyMultilingualNeural', label: 'Remy (Male)' },
-            { value: 'fr-FR-DeniseNeural', label: 'Denise (Female)' },
-            { value: 'fr-FR-EloiseNeural', label: 'Eloise (Female)' },
-            { value: 'fr-FR-HenriNeural', label: 'Henri (Male)' },
-        ],
-        'fr-CA': [
-            { value: 'fr-CA-SylvieNeural', label: 'Sylvie (Female)' },
-            { value: 'fr-CA-AntoineNeural', label: 'Antoine (Male)' },
-            { value: 'fr-CA-JeanNeural', label: 'Jean (Male)' },
-        ],
-        'de-DE': [
-            { value: 'de-DE-SeraphinaMultilingualNeural', label: 'Seraphina (Female)' },
-            { value: 'de-DE-FlorianMultilingualNeural', label: 'Florian (Male)' },
-            { value: 'de-DE-AmalaNeural', label: 'Amala (Female)' },
-            { value: 'de-DE-ConradNeural', label: 'Conrad (Male)' },
-            { value: 'de-DE-KatjaNeural', label: 'Katja (Female)' },
-            { value: 'de-DE-KillianNeural', label: 'Killian (Male)' },
-            { value: 'de-DE-BerndNeural', label: 'Bernd (Male)' },
-            { value: 'de-DE-ChristophNeural', label: 'Christoph (Male)' },
-            { value: 'de-DE-ElkeNeural', label: 'Elke (Female)' },
-            { value: 'de-DE-GiselaNeural', label: 'Gisela (Female)' },
-            { value: 'de-DE-KasperNeural', label: 'Kasper (Male)' },
-            { value: 'de-DE-KlarissaNeural', label: 'Klarissa (Female)' },
-            { value: 'de-DE-KlausNeural', label: 'Klaus (Male)' },
-            { value: 'de-DE-LouisaNeural', label: 'Louisa (Female)' },
-            { value: 'de-DE-MajaNeural', label: 'Maja (Female)' },
-            { value: 'de-DE-RalfNeural', label: 'Ralf (Male)' },
-            { value: 'de-DE-TanjaNeural', label: 'Tanja (Female)' },
-        ],
-        'it-IT': [
-            { value: 'it-IT-GiuseppeMultilingualNeural', label: 'Giuseppe (Male)' },
-            { value: 'it-IT-DiegoNeural', label: 'Diego (Male)' },
-            { value: 'it-IT-ElsaNeural', label: 'Elsa (Female)' },
-            { value: 'it-IT-IsabellaNeural', label: 'Isabella (Female)' },
-            { value: 'it-IT-BenignoNeural', label: 'Benigno (Male)' },
-            { value: 'it-IT-CalimeroNeural', label: 'Calimero (Male)' },
-            { value: 'it-IT-CataldoNeural', label: 'Cataldo (Male)' },
-            { value: 'it-IT-FabiolaNeural', label: 'Fabiola (Female)' },
-            { value: 'it-IT-FiammaNeural', label: 'Fiamma (Female)' },
-            { value: 'it-IT-GianniNeural', label: 'Gianni (Male)' },
-            { value: 'it-IT-ImeldaNeural', label: 'Imelda (Female)' },
-            { value: 'it-IT-IrmaNeural', label: 'Irma (Female)' },
-            { value: 'it-IT-LisandroNeural', label: 'Lisandro (Male)' },
-            { value: 'it-IT-PalmiraNeural', label: 'Palmira (Female)' },
-            { value: 'it-IT-PierinaNeural', label: 'Pierina (Female)' },
-            { value: 'it-IT-RinaldoNeural', label: 'Rinaldo (Male)' },
-        ],
-        'pt-BR': [
-            { value: 'pt-BR-ThalitaMultilingualNeural', label: 'Thalita (Female)' },
-            { value: 'pt-BR-AntonioNeural', label: 'Antonio (Male)' },
-            { value: 'pt-BR-FranciscaNeural', label: 'Francisca (Female)' },
-            { value: 'pt-BR-BrendaNeural', label: 'Brenda (Female)' },
-            { value: 'pt-BR-DonatoNeural', label: 'Donato (Male)' },
-            { value: 'pt-BR-ElzaNeural', label: 'Elza (Female)' },
-            { value: 'pt-BR-FabioNeural', label: 'Fabio (Male)' },
-            { value: 'pt-BR-GiovannaNeural', label: 'Giovanna (Female)' },
-            { value: 'pt-BR-HumbertoNeural', label: 'Humberto (Male)' },
-            { value: 'pt-BR-JulioNeural', label: 'Julio (Male)' },
-            { value: 'pt-BR-LeilaNeural', label: 'Leila (Female)' },
-            { value: 'pt-BR-LeticiaNeural', label: 'Leticia (Female)' },
-            { value: 'pt-BR-ManuelaNeural', label: 'Manuela (Female)' },
-            { value: 'pt-BR-NicolauNeural', label: 'Nicolau (Male)' },
-            { value: 'pt-BR-ValerioNeural', label: 'Valerio (Male)' },
-            { value: 'pt-BR-YaraNeural', label: 'Yara (Female)' },
-        ],
-        'pt-PT': [
-            { value: 'pt-PT-RaquelNeural', label: 'Raquel (Female)' },
-            { value: 'pt-PT-DuarteNeural', label: 'Duarte (Male)' },
-        ],
+'af-ZA': [
+        { value: 'af-ZA-AdriNeural', label: 'Adri (Female)' },
+        { value: 'af-ZA-WillemNeural', label: 'Willem (Male)' },
+    ],
+    'am-ET': [
+        { value: 'am-ET-AmehaNeural', label: 'Ameha (Male)' },
+        { value: 'am-ET-MekdesNeural', label: 'Mekdes (Female)' },
+    ],
+    'ar-AE': [
+        { value: 'ar-AE-FatimaNeural', label: 'Fatima (Female)' },
+        { value: 'ar-AE-HamdanNeural', label: 'Hamdan (Male)' },
+    ],
+    'ar-BH': [
+        { value: 'ar-BH-AliNeural', label: 'Ali (Male)' },
+        { value: 'ar-BH-LailaNeural', label: 'Laila (Female)' },
+    ],
+    'ar-DZ': [
+        { value: 'ar-DZ-AminaNeural', label: 'Amina (Female)' },
+        { value: 'ar-DZ-IsmaelNeural', label: 'Ismael (Male)' },
+    ],
+    'ar-EG': [
+        { value: 'ar-EG-SalmaNeural', label: 'Salma (Female)' },
+        { value: 'ar-EG-ShakirNeural', label: 'Shakir (Male)' },
+    ],
+    'ar-IQ': [
+        { value: 'ar-IQ-BasselNeural', label: 'Bassel (Male)' },
+        { value: 'ar-IQ-RanaNeural', label: 'Rana (Female)' },
+    ],
+    'ar-JO': [
+        { value: 'ar-JO-SanaNeural', label: 'Sana (Female)' },
+        { value: 'ar-JO-TaimNeural', label: 'Taim (Male)' },
+    ],
+    'ar-KW': [
+        { value: 'ar-KW-FahedNeural', label: 'Fahed (Male)' },
+        { value: 'ar-KW-NouraNeural', label: 'Noura (Female)' },
+    ],
+    'ar-LB': [
+        { value: 'ar-LB-LaylaNeural', label: 'Layla (Female)' },
+        { value: 'ar-LB-RamiNeural', label: 'Rami (Male)' },
+    ],
+    'ar-LY': [
+        { value: 'ar-LY-ImanNeural', label: 'Iman (Female)' },
+        { value: 'ar-LY-OmarNeural', label: 'Omar (Male)' },
+    ],
+    'ar-MA': [
+        { value: 'ar-MA-JamalNeural', label: 'Jamal (Male)' },
+        { value: 'ar-MA-MounaNeural', label: 'Mouna (Female)' },
+    ],
+    'ar-OM': [
+        { value: 'ar-OM-AbdullahNeural', label: 'Abdullah (Male)' },
+        { value: 'ar-OM-AyshaNeural', label: 'Aysha (Female)' },
+    ],
+    'ar-QA': [
+        { value: 'ar-QA-AmalNeural', label: 'Amal (Female)' },
+        { value: 'ar-QA-MoazNeural', label: 'Moaz (Male)' },
+    ],
+    'ar-SA': [
+        { value: 'ar-SA-HamedNeural', label: 'Hamed (Male)' },
+        { value: 'ar-SA-ZariyahNeural', label: 'Zariyah (Female)' },
+    ],
+    'ar-SY': [
+        { value: 'ar-SY-AmanyNeural', label: 'Amany (Female)' },
+        { value: 'ar-SY-LaithNeural', label: 'Laith (Male)' },
+    ],
+    'ar-TN': [
+        { value: 'ar-TN-HediNeural', label: 'Hedi (Male)' },
+        { value: 'ar-TN-ReemNeural', label: 'Reem (Female)' },
+    ],
+    'ar-YE': [
+        { value: 'ar-YE-MaryamNeural', label: 'Maryam (Female)' },
+        { value: 'ar-YE-SalehNeural', label: 'Saleh (Male)' },
+    ],
+    'az-AZ': [
+        { value: 'az-AZ-BabekNeural', label: 'Babek (Male)' },
+        { value: 'az-AZ-BanuNeural', label: 'Banu (Female)' },
+    ],
+    'bg-BG': [
+        { value: 'bg-BG-BorislavNeural', label: 'Borislav (Male)' },
+        { value: 'bg-BG-KalinaNeural', label: 'Kalina (Female)' },
+    ],
+    'bn-BD': [
+        { value: 'bn-BD-NabanitaNeural', label: 'Nabanita (Female)' },
+        { value: 'bn-BD-PradeepNeural', label: 'Pradeep (Male)' },
+    ],
+    'bn-IN': [
+        { value: 'bn-IN-BashkarNeural', label: 'Bashkar (Male)' },
+        { value: 'bn-IN-TanishaaNeural', label: 'Tanishaa (Female)' },
+    ],
+    'bs-BA': [
+        { value: 'bs-BA-VesnaNeural', label: 'Vesna (Female)' },
+        { value: 'bs-BA-GoranNeural', label: 'Goran (Male)' },
+    ],
+    'ca-ES': [
+        { value: 'ca-ES-EnricNeural', label: 'Enric (Male)' },
+        { value: 'ca-ES-JoanaNeural', label: 'Joana (Female)' },
+    ],
+    'cs-CZ': [
+        { value: 'cs-CZ-AntoninNeural', label: 'Antonin (Male)' },
+        { value: 'cs-CZ-VlastaNeural', label: 'Vlasta (Female)' },
+    ],
+    'cy-GB': [
+        { value: 'cy-GB-AledNeural', label: 'Aled (Male)' },
+        { value: 'cy-GB-NiaNeural', label: 'Nia (Female)' },
+    ],
+    'da-DK': [
+        { value: 'da-DK-ChristelNeural', label: 'Christel (Female)' },
+        { value: 'da-DK-JeppeNeural', label: 'Jeppe (Male)' },
+    ],
+    'de-AT': [
+        { value: 'de-AT-IngridNeural', label: 'Ingrid (Female)' },
+        { value: 'de-AT-JonasNeural', label: 'Jonas (Male)' },
+    ],
+    'de-CH': [
+        { value: 'de-CH-JanNeural', label: 'Jan (Male)' },
+        { value: 'de-CH-LeniNeural', label: 'Leni (Female)' },
+    ],
+    'de-DE': [
+        { value: 'de-DE-SeraphinaMultilingualNeural', label: 'SeraphinaMultilingual (Female)' },
+        { value: 'de-DE-FlorianMultilingualNeural', label: 'FlorianMultilingual (Male)' },
+        { value: 'de-DE-AmalaNeural', label: 'Amala (Female)' },
+        { value: 'de-DE-ConradNeural', label: 'Conrad (Male)' },
+        { value: 'de-DE-KatjaNeural', label: 'Katja (Female)' },
+        { value: 'de-DE-KillianNeural', label: 'Killian (Male)' },
+    ],
+    'el-GR': [
+        { value: 'el-GR-AthinaNeural', label: 'Athina (Female)' },
+        { value: 'el-GR-NestorasNeural', label: 'Nestoras (Male)' },
+    ],
+    'en-AU': [
+        { value: 'en-AU-WilliamMultilingualNeural', label: 'WilliamMultilingual (Male)' },
+        { value: 'en-AU-NatashaNeural', label: 'Natasha (Female)' },
+    ],
+    'en-CA': [
+        { value: 'en-CA-ClaraNeural', label: 'Clara (Female)' },
+        { value: 'en-CA-LiamNeural', label: 'Liam (Male)' },
+    ],
+    'en-GB': [
+        { value: 'en-GB-LibbyNeural', label: 'Libby (Female)' },
+        { value: 'en-GB-MaisieNeural', label: 'Maisie (Female)' },
+        { value: 'en-GB-RyanNeural', label: 'Ryan (Male)' },
+        { value: 'en-GB-SoniaNeural', label: 'Sonia (Female)' },
+        { value: 'en-GB-ThomasNeural', label: 'Thomas (Male)' },
+    ],
+    'en-HK': [
+        { value: 'en-HK-YanNeural', label: 'Yan (Female)' },
+        { value: 'en-HK-SamNeural', label: 'Sam (Male)' },
+    ],
+    'en-IE': [
+        { value: 'en-IE-ConnorNeural', label: 'Connor (Male)' },
+        { value: 'en-IE-EmilyNeural', label: 'Emily (Female)' },
+    ],
+    'en-IN': [
+        { value: 'en-IN-NeerjaExpressiveNeural', label: 'NeerjaExpressive (Female)' },
+        { value: 'en-IN-NeerjaNeural', label: 'Neerja (Female)' },
+        { value: 'en-IN-PrabhatNeural', label: 'Prabhat (Male)' },
+    ],
+    'en-KE': [
+        { value: 'en-KE-AsiliaNeural', label: 'Asilia (Female)' },
+        { value: 'en-KE-ChilembaNeural', label: 'Chilemba (Male)' },
+    ],
+    'en-NG': [
+        { value: 'en-NG-AbeoNeural', label: 'Abeo (Male)' },
+        { value: 'en-NG-EzinneNeural', label: 'Ezinne (Female)' },
+    ],
+    'en-NZ': [
+        { value: 'en-NZ-MitchellNeural', label: 'Mitchell (Male)' },
+        { value: 'en-NZ-MollyNeural', label: 'Molly (Female)' },
+    ],
+    'en-PH': [
+        { value: 'en-PH-JamesNeural', label: 'James (Male)' },
+        { value: 'en-PH-RosaNeural', label: 'Rosa (Female)' },
+    ],
+    'en-SG': [
+        { value: 'en-SG-LunaNeural', label: 'Luna (Female)' },
+        { value: 'en-SG-WayneNeural', label: 'Wayne (Male)' },
+    ],
+    'en-TZ': [
+        { value: 'en-TZ-ElimuNeural', label: 'Elimu (Male)' },
+        { value: 'en-TZ-ImaniNeural', label: 'Imani (Female)' },
+    ],
+    'en-US': [
+        { value: 'en-US-AvaNeural', label: 'Ava (Female)' },
+        { value: 'en-US-AndrewNeural', label: 'Andrew (Male)' },
+        { value: 'en-US-EmmaNeural', label: 'Emma (Female)' },
+        { value: 'en-US-BrianNeural', label: 'Brian (Male)' },
+        { value: 'en-US-AnaNeural', label: 'Ana (Female)' },
+        { value: 'en-US-AndrewMultilingualNeural', label: 'AndrewMultilingual (Male)' },
+        { value: 'en-US-AriaNeural', label: 'Aria (Female)' },
+        { value: 'en-US-AvaMultilingualNeural', label: 'AvaMultilingual (Female)' },
+        { value: 'en-US-BrianMultilingualNeural', label: 'BrianMultilingual (Male)' },
+        { value: 'en-US-ChristopherNeural', label: 'Christopher (Male)' },
+        { value: 'en-US-EmmaMultilingualNeural', label: 'EmmaMultilingual (Female)' },
+        { value: 'en-US-EricNeural', label: 'Eric (Male)' },
+        { value: 'en-US-GuyNeural', label: 'Guy (Male)' },
+        { value: 'en-US-JennyNeural', label: 'Jenny (Female)' },
+        { value: 'en-US-MichelleNeural', label: 'Michelle (Female)' },
+        { value: 'en-US-RogerNeural', label: 'Roger (Male)' },
+        { value: 'en-US-SteffanNeural', label: 'Steffan (Male)' },
+    ],
+    'en-ZA': [
+        { value: 'en-ZA-LeahNeural', label: 'Leah (Female)' },
+        { value: 'en-ZA-LukeNeural', label: 'Luke (Male)' },
+    ],
+    'es-AR': [
+        { value: 'es-AR-ElenaNeural', label: 'Elena (Female)' },
+        { value: 'es-AR-TomasNeural', label: 'Tomas (Male)' },
+    ],
+    'es-BO': [
+        { value: 'es-BO-MarceloNeural', label: 'Marcelo (Male)' },
+        { value: 'es-BO-SofiaNeural', label: 'Sofia (Female)' },
+    ],
+    'es-CL': [
+        { value: 'es-CL-CatalinaNeural', label: 'Catalina (Female)' },
+        { value: 'es-CL-LorenzoNeural', label: 'Lorenzo (Male)' },
+    ],
+    'es-CO': [
+        { value: 'es-CO-GonzaloNeural', label: 'Gonzalo (Male)' },
+        { value: 'es-CO-SalomeNeural', label: 'Salome (Female)' },
+    ],
+    'es-CR': [
+        { value: 'es-CR-JuanNeural', label: 'Juan (Male)' },
+        { value: 'es-CR-MariaNeural', label: 'Maria (Female)' },
+    ],
+    'es-CU': [
+        { value: 'es-CU-BelkysNeural', label: 'Belkys (Female)' },
+        { value: 'es-CU-ManuelNeural', label: 'Manuel (Male)' },
+    ],
+    'es-DO': [
+        { value: 'es-DO-EmilioNeural', label: 'Emilio (Male)' },
+        { value: 'es-DO-RamonaNeural', label: 'Ramona (Female)' },
+    ],
+    'es-EC': [
+        { value: 'es-EC-AndreaNeural', label: 'Andrea (Female)' },
+        { value: 'es-EC-LuisNeural', label: 'Luis (Male)' },
+    ],
+    'es-ES': [
+        { value: 'es-ES-XimenaNeural', label: 'Ximena (Female)' },
+        { value: 'es-ES-AlvaroNeural', label: 'Alvaro (Male)' },
+        { value: 'es-ES-ElviraNeural', label: 'Elvira (Female)' },
+    ],
+    'es-GQ': [
+        { value: 'es-GQ-JavierNeural', label: 'Javier (Male)' },
+        { value: 'es-GQ-TeresaNeural', label: 'Teresa (Female)' },
+    ],
+    'es-GT': [
+        { value: 'es-GT-AndresNeural', label: 'Andres (Male)' },
+        { value: 'es-GT-MartaNeural', label: 'Marta (Female)' },
+    ],
+    'es-HN': [
+        { value: 'es-HN-CarlosNeural', label: 'Carlos (Male)' },
+        { value: 'es-HN-KarlaNeural', label: 'Karla (Female)' },
+    ],
+    'es-MX': [
+        { value: 'es-MX-DaliaNeural', label: 'Dalia (Female)' },
+        { value: 'es-MX-JorgeNeural', label: 'Jorge (Male)' },
+    ],
+    'es-NI': [
+        { value: 'es-NI-FedericoNeural', label: 'Federico (Male)' },
+        { value: 'es-NI-YolandaNeural', label: 'Yolanda (Female)' },
+    ],
+    'es-PA': [
+        { value: 'es-PA-MargaritaNeural', label: 'Margarita (Female)' },
+        { value: 'es-PA-RobertoNeural', label: 'Roberto (Male)' },
+    ],
+    'es-PE': [
+        { value: 'es-PE-AlexNeural', label: 'Alex (Male)' },
+        { value: 'es-PE-CamilaNeural', label: 'Camila (Female)' },
+    ],
+    'es-PR': [
+        { value: 'es-PR-KarinaNeural', label: 'Karina (Female)' },
+        { value: 'es-PR-VictorNeural', label: 'Victor (Male)' },
+    ],
+    'es-PY': [
+        { value: 'es-PY-MarioNeural', label: 'Mario (Male)' },
+        { value: 'es-PY-TaniaNeural', label: 'Tania (Female)' },
+    ],
+    'es-SV': [
+        { value: 'es-SV-LorenaNeural', label: 'Lorena (Female)' },
+        { value: 'es-SV-RodrigoNeural', label: 'Rodrigo (Male)' },
+    ],
+    'es-US': [
+        { value: 'es-US-AlonsoNeural', label: 'Alonso (Male)' },
+        { value: 'es-US-PalomaNeural', label: 'Paloma (Female)' },
+    ],
+    'es-UY': [
+        { value: 'es-UY-MateoNeural', label: 'Mateo (Male)' },
+        { value: 'es-UY-ValentinaNeural', label: 'Valentina (Female)' },
+    ],
+    'es-VE': [
+        { value: 'es-VE-PaolaNeural', label: 'Paola (Female)' },
+        { value: 'es-VE-SebastianNeural', label: 'Sebastian (Male)' },
+    ],
+    'et-EE': [
+        { value: 'et-EE-AnuNeural', label: 'Anu (Female)' },
+        { value: 'et-EE-KertNeural', label: 'Kert (Male)' },
+    ],
+    'fa-IR': [
+        { value: 'fa-IR-DilaraNeural', label: 'Dilara (Female)' },
+        { value: 'fa-IR-FaridNeural', label: 'Farid (Male)' },
+    ],
+    'fi-FI': [
+        { value: 'fi-FI-HarriNeural', label: 'Harri (Male)' },
+        { value: 'fi-FI-NooraNeural', label: 'Noora (Female)' },
+    ],
+    'fil-PH': [
+        { value: 'fil-PH-AngeloNeural', label: 'Angelo (Male)' },
+        { value: 'fil-PH-BlessicaNeural', label: 'Blessica (Female)' },
+    ],
+    'fr-BE': [
+        { value: 'fr-BE-CharlineNeural', label: 'Charline (Female)' },
+        { value: 'fr-BE-GerardNeural', label: 'Gerard (Male)' },
+    ],
+    'fr-CA': [
+        { value: 'fr-CA-ThierryNeural', label: 'Thierry (Male)' },
+        { value: 'fr-CA-AntoineNeural', label: 'Antoine (Male)' },
+        { value: 'fr-CA-JeanNeural', label: 'Jean (Male)' },
+        { value: 'fr-CA-SylvieNeural', label: 'Sylvie (Female)' },
+    ],
+    'fr-CH': [
+        { value: 'fr-CH-ArianeNeural', label: 'Ariane (Female)' },
+        { value: 'fr-CH-FabriceNeural', label: 'Fabrice (Male)' },
+    ],
+    'fr-FR': [
+        { value: 'fr-FR-VivienneMultilingualNeural', label: 'VivienneMultilingual (Female)' },
+        { value: 'fr-FR-RemyMultilingualNeural', label: 'RemyMultilingual (Male)' },
+        { value: 'fr-FR-DeniseNeural', label: 'Denise (Female)' },
+        { value: 'fr-FR-EloiseNeural', label: 'Eloise (Female)' },
+        { value: 'fr-FR-HenriNeural', label: 'Henri (Male)' },
+    ],
+    'ga-IE': [
+        { value: 'ga-IE-ColmNeural', label: 'Colm (Male)' },
+        { value: 'ga-IE-OrlaNeural', label: 'Orla (Female)' },
+    ],
+    'gl-ES': [
+        { value: 'gl-ES-RoiNeural', label: 'Roi (Male)' },
+        { value: 'gl-ES-SabelaNeural', label: 'Sabela (Female)' },
+    ],
+    'gu-IN': [
+        { value: 'gu-IN-DhwaniNeural', label: 'Dhwani (Female)' },
+        { value: 'gu-IN-NiranjanNeural', label: 'Niranjan (Male)' },
+    ],
+    'he-IL': [
+        { value: 'he-IL-AvriNeural', label: 'Avri (Male)' },
+        { value: 'he-IL-HilaNeural', label: 'Hila (Female)' },
+    ],
+    'hi-IN': [
+        { value: 'hi-IN-MadhurNeural', label: 'Madhur (Male)' },
+        { value: 'hi-IN-SwaraNeural', label: 'Swara (Female)' },
+    ],
+    'hr-HR': [
+        { value: 'hr-HR-GabrijelaNeural', label: 'Gabrijela (Female)' },
+        { value: 'hr-HR-SreckoNeural', label: 'Srecko (Male)' },
+    ],
+    'hu-HU': [
+        { value: 'hu-HU-NoemiNeural', label: 'Noemi (Female)' },
+        { value: 'hu-HU-TamasNeural', label: 'Tamas (Male)' },
+    ],
+    'id-ID': [
+        { value: 'id-ID-ArdiNeural', label: 'Ardi (Male)' },
+        { value: 'id-ID-GadisNeural', label: 'Gadis (Female)' },
+    ],
+    'is-IS': [
+        { value: 'is-IS-GudrunNeural', label: 'Gudrun (Female)' },
+        { value: 'is-IS-GunnarNeural', label: 'Gunnar (Male)' },
+    ],
+    'it-IT': [
+        { value: 'it-IT-GiuseppeMultilingualNeural', label: 'GiuseppeMultilingual (Male)' },
+        { value: 'it-IT-DiegoNeural', label: 'Diego (Male)' },
+        { value: 'it-IT-ElsaNeural', label: 'Elsa (Female)' },
+        { value: 'it-IT-IsabellaNeural', label: 'Isabella (Female)' },
+    ],
+    'iu-Cans-CA': [
+        { value: 'iu-Cans-CA-SiqiniqNeural', label: 'Siqiniq (Female)' },
+        { value: 'iu-Cans-CA-TaqqiqNeural', label: 'Taqqiq (Male)' },
+    ],
+    'iu-Latn-CA': [
+        { value: 'iu-Latn-CA-SiqiniqNeural', label: 'Siqiniq (Female)' },
+        { value: 'iu-Latn-CA-TaqqiqNeural', label: 'Taqqiq (Male)' },
+    ],
+    'ja-JP': [
+        { value: 'ja-JP-KeitaNeural', label: 'Keita (Male)' },
+        { value: 'ja-JP-NanamiNeural', label: 'Nanami (Female)' },
+    ],
+    'jv-ID': [
+        { value: 'jv-ID-DimasNeural', label: 'Dimas (Male)' },
+        { value: 'jv-ID-SitiNeural', label: 'Siti (Female)' },
+    ],
+    'ka-GE': [
+        { value: 'ka-GE-EkaNeural', label: 'Eka (Female)' },
+        { value: 'ka-GE-GiorgiNeural', label: 'Giorgi (Male)' },
+    ],
+    'kk-KZ': [
+        { value: 'kk-KZ-AigulNeural', label: 'Aigul (Female)' },
+        { value: 'kk-KZ-DauletNeural', label: 'Daulet (Male)' },
+    ],
+    'km-KH': [
+        { value: 'km-KH-PisethNeural', label: 'Piseth (Male)' },
+        { value: 'km-KH-SreymomNeural', label: 'Sreymom (Female)' },
+    ],
+    'kn-IN': [
+        { value: 'kn-IN-GaganNeural', label: 'Gagan (Male)' },
+        { value: 'kn-IN-SapnaNeural', label: 'Sapna (Female)' },
+    ],
+    'ko-KR': [
+        { value: 'ko-KR-HyunsuMultilingualNeural', label: 'HyunsuMultilingual (Male)' },
+        { value: 'ko-KR-InJoonNeural', label: 'InJoon (Male)' },
+        { value: 'ko-KR-SunHiNeural', label: 'SunHi (Female)' },
+    ],
+    'lo-LA': [
+        { value: 'lo-LA-ChanthavongNeural', label: 'Chanthavong (Male)' },
+        { value: 'lo-LA-KeomanyNeural', label: 'Keomany (Female)' },
+    ],
+    'lt-LT': [
+        { value: 'lt-LT-LeonasNeural', label: 'Leonas (Male)' },
+        { value: 'lt-LT-OnaNeural', label: 'Ona (Female)' },
+    ],
+    'lv-LV': [
+        { value: 'lv-LV-EveritaNeural', label: 'Everita (Female)' },
+        { value: 'lv-LV-NilsNeural', label: 'Nils (Male)' },
+    ],
+    'mk-MK': [
+        { value: 'mk-MK-AleksandarNeural', label: 'Aleksandar (Male)' },
+        { value: 'mk-MK-MarijaNeural', label: 'Marija (Female)' },
+    ],
+    'ml-IN': [
+        { value: 'ml-IN-MidhunNeural', label: 'Midhun (Male)' },
+        { value: 'ml-IN-SobhanaNeural', label: 'Sobhana (Female)' },
+    ],
+    'mn-MN': [
+        { value: 'mn-MN-BataaNeural', label: 'Bataa (Male)' },
+        { value: 'mn-MN-YesuiNeural', label: 'Yesui (Female)' },
+    ],
+    'mr-IN': [
+        { value: 'mr-IN-AarohiNeural', label: 'Aarohi (Female)' },
+        { value: 'mr-IN-ManoharNeural', label: 'Manohar (Male)' },
+    ],
+    'ms-MY': [
+        { value: 'ms-MY-OsmanNeural', label: 'Osman (Male)' },
+        { value: 'ms-MY-YasminNeural', label: 'Yasmin (Female)' },
+    ],
+    'mt-MT': [
+        { value: 'mt-MT-GraceNeural', label: 'Grace (Female)' },
+        { value: 'mt-MT-JosephNeural', label: 'Joseph (Male)' },
+    ],
+    'my-MM': [
+        { value: 'my-MM-NilarNeural', label: 'Nilar (Female)' },
+        { value: 'my-MM-ThihaNeural', label: 'Thiha (Male)' },
+    ],
+    'nb-NO': [
+        { value: 'nb-NO-FinnNeural', label: 'Finn (Male)' },
+        { value: 'nb-NO-PernilleNeural', label: 'Pernille (Female)' },
+    ],
+    'ne-NP': [
+        { value: 'ne-NP-HemkalaNeural', label: 'Hemkala (Female)' },
+        { value: 'ne-NP-SagarNeural', label: 'Sagar (Male)' },
+    ],
+    'nl-BE': [
+        { value: 'nl-BE-ArnaudNeural', label: 'Arnaud (Male)' },
+        { value: 'nl-BE-DenaNeural', label: 'Dena (Female)' },
+    ],
+    'nl-NL': [
+        { value: 'nl-NL-ColetteNeural', label: 'Colette (Female)' },
+        { value: 'nl-NL-FennaNeural', label: 'Fenna (Female)' },
+        { value: 'nl-NL-MaartenNeural', label: 'Maarten (Male)' },
+    ],
+    'pl-PL': [
+        { value: 'pl-PL-MarekNeural', label: 'Marek (Male)' },
+        { value: 'pl-PL-ZofiaNeural', label: 'Zofia (Female)' },
+    ],
+    'ps-AF': [
+        { value: 'ps-AF-GulNawazNeural', label: 'GulNawaz (Male)' },
+        { value: 'ps-AF-LatifaNeural', label: 'Latifa (Female)' },
+    ],
+    'pt-BR': [
+        { value: 'pt-BR-ThalitaMultilingualNeural', label: 'ThalitaMultilingual (Female)' },
+        { value: 'pt-BR-AntonioNeural', label: 'Antonio (Male)' },
+        { value: 'pt-BR-FranciscaNeural', label: 'Francisca (Female)' },
+    ],
+    'pt-PT': [
+        { value: 'pt-PT-DuarteNeural', label: 'Duarte (Male)' },
+        { value: 'pt-PT-RaquelNeural', label: 'Raquel (Female)' },
+    ],
+    'ro-RO': [
+        { value: 'ro-RO-AlinaNeural', label: 'Alina (Female)' },
+        { value: 'ro-RO-EmilNeural', label: 'Emil (Male)' },
+    ],
+    'ru-RU': [
+        { value: 'ru-RU-DmitryNeural', label: 'Dmitry (Male)' },
+        { value: 'ru-RU-SvetlanaNeural', label: 'Svetlana (Female)' },
+    ],
+    'si-LK': [
+        { value: 'si-LK-SameeraNeural', label: 'Sameera (Male)' },
+        { value: 'si-LK-ThiliniNeural', label: 'Thilini (Female)' },
+    ],
+    'sk-SK': [
+        { value: 'sk-SK-LukasNeural', label: 'Lukas (Male)' },
+        { value: 'sk-SK-ViktoriaNeural', label: 'Viktoria (Female)' },
+    ],
+    'sl-SI': [
+        { value: 'sl-SI-PetraNeural', label: 'Petra (Female)' },
+        { value: 'sl-SI-RokNeural', label: 'Rok (Male)' },
+    ],
+    'so-SO': [
+        { value: 'so-SO-MuuseNeural', label: 'Muuse (Male)' },
+        { value: 'so-SO-UbaxNeural', label: 'Ubax (Female)' },
+    ],
+    'sq-AL': [
+        { value: 'sq-AL-AnilaNeural', label: 'Anila (Female)' },
+        { value: 'sq-AL-IlirNeural', label: 'Ilir (Male)' },
+    ],
+    'sr-RS': [
+        { value: 'sr-RS-NicholasNeural', label: 'Nicholas (Male)' },
+        { value: 'sr-RS-SophieNeural', label: 'Sophie (Female)' },
+    ],
+    'su-ID': [
+        { value: 'su-ID-JajangNeural', label: 'Jajang (Male)' },
+        { value: 'su-ID-TutiNeural', label: 'Tuti (Female)' },
+    ],
+    'sv-SE': [
+        { value: 'sv-SE-MattiasNeural', label: 'Mattias (Male)' },
+        { value: 'sv-SE-SofieNeural', label: 'Sofie (Female)' },
+    ],
+    'sw-KE': [
+        { value: 'sw-KE-RafikiNeural', label: 'Rafiki (Male)' },
+        { value: 'sw-KE-ZuriNeural', label: 'Zuri (Female)' },
+    ],
+    'sw-TZ': [
+        { value: 'sw-TZ-DaudiNeural', label: 'Daudi (Male)' },
+        { value: 'sw-TZ-RehemaNeural', label: 'Rehema (Female)' },
+    ],
+    'ta-IN': [
+        { value: 'ta-IN-PallaviNeural', label: 'Pallavi (Female)' },
+        { value: 'ta-IN-ValluvarNeural', label: 'Valluvar (Male)' },
+    ],
+    'ta-LK': [
+        { value: 'ta-LK-KumarNeural', label: 'Kumar (Male)' },
+        { value: 'ta-LK-SaranyaNeural', label: 'Saranya (Female)' },
+    ],
+    'ta-MY': [
+        { value: 'ta-MY-KaniNeural', label: 'Kani (Female)' },
+        { value: 'ta-MY-SuryaNeural', label: 'Surya (Male)' },
+    ],
+    'ta-SG': [
+        { value: 'ta-SG-AnbuNeural', label: 'Anbu (Male)' },
+        { value: 'ta-SG-VenbaNeural', label: 'Venba (Female)' },
+    ],
+    'te-IN': [
+        { value: 'te-IN-MohanNeural', label: 'Mohan (Male)' },
+        { value: 'te-IN-ShrutiNeural', label: 'Shruti (Female)' },
+    ],
+    'th-TH': [
+        { value: 'th-TH-NiwatNeural', label: 'Niwat (Male)' },
+        { value: 'th-TH-PremwadeeNeural', label: 'Premwadee (Female)' },
+    ],
+    'tr-TR': [
+        { value: 'tr-TR-EmelNeural', label: 'Emel (Female)' },
+        { value: 'tr-TR-AhmetNeural', label: 'Ahmet (Male)' },
+    ],
+    'uk-UA': [
+        { value: 'uk-UA-OstapNeural', label: 'Ostap (Male)' },
+        { value: 'uk-UA-PolinaNeural', label: 'Polina (Female)' },
+    ],
+    'ur-IN': [
+        { value: 'ur-IN-GulNeural', label: 'Gul (Female)' },
+        { value: 'ur-IN-SalmanNeural', label: 'Salman (Male)' },
+    ],
+    'ur-PK': [
+        { value: 'ur-PK-AsadNeural', label: 'Asad (Male)' },
+        { value: 'ur-PK-UzmaNeural', label: 'Uzma (Female)' },
+    ],
+    'uz-UZ': [
+        { value: 'uz-UZ-MadinaNeural', label: 'Madina (Female)' },
+        { value: 'uz-UZ-SardorNeural', label: 'Sardor (Male)' },
+    ],
+    'vi-VN': [
+        { value: 'vi-VN-HoaiMyNeural', label: 'HoaiMy (Female)' },
+        { value: 'vi-VN-NamMinhNeural', label: 'NamMinh (Male)' },
+    ],
+    'zh-CN': [
+        { value: 'zh-CN-XiaoxiaoNeural', label: 'Xiaoxiao (Female)' },
+        { value: 'zh-CN-XiaoyiNeural', label: 'Xiaoyi (Female)' },
+        { value: 'zh-CN-YunjianNeural', label: 'Yunjian (Male)' },
+        { value: 'zh-CN-YunxiNeural', label: 'Yunxi (Male)' },
+        { value: 'zh-CN-YunxiaNeural', label: 'Yunxia (Male)' },
+        { value: 'zh-CN-YunyangNeural', label: 'Yunyang (Male)' },
+    ],
+    'zh-HK': [
+        { value: 'zh-HK-HiuGaaiNeural', label: 'HiuGaai (Female)' },
+        { value: 'zh-HK-HiuMaanNeural', label: 'HiuMaan (Female)' },
+        { value: 'zh-HK-WanLungNeural', label: 'WanLung (Male)' },
+    ],
+    'zh-TW': [
+        { value: 'zh-TW-HsiaoChenNeural', label: 'HsiaoChen (Female)' },
+        { value: 'zh-TW-YunJheNeural', label: 'YunJhe (Male)' },
+        { value: 'zh-TW-HsiaoYuNeural', label: 'HsiaoYu (Female)' },
+    ],
+    'zu-ZA': [
+        { value: 'zu-ZA-ThandoNeural', label: 'Thando (Female)' },
+        { value: 'zu-ZA-ThembaNeural', label: 'Themba (Male)' },
+    ],
     };
 
     // 当前使用的语音列表（根据引擎动态切换）
-    let currentVoicesByLanguage = azureVoicesByLanguage;
+    let currentVoicesByLanguage = edgeVoicesByLanguage; // 默认使用 Edge，用户启用 Azure 后会切换
     
     // 检测当前应该使用哪个 TTS 引擎
     // 根据 Azure API Key 的有效性决定：
@@ -691,21 +1772,29 @@
             const settings = await invoke('get_settings_command');
             const apiKey = settings.api_key || '';
             const region = settings.region || 'eastus';
-            
-            // 验证 Azure API Key 是否有效
+            const useAzure = settings.use_azure === true; // 只有明确为 true 时才启用
+
+            // 如果 Azure TTS 未启用，直接使用 Edge
+            if (!useAzure) {
+                console.log('Azure TTS is disabled, using Edge voice list');
+                currentVoicesByLanguage = edgeVoicesByLanguage;
+                return 'edge';
+            }
+
+            // Azure TTS 已启用，验证 API Key 是否有效
             let isAzureValid = false;
             if (apiKey) {
                 try {
-                    isAzureValid = await invoke('validate_azure_api_key', { 
-                        apiKey: apiKey, 
-                        region: region 
+                    isAzureValid = await invoke('validate_azure_api_key', {
+                        apiKey: apiKey,
+                        region: region
                     });
                 } catch (e) {
                     console.log('API Key validation error:', e);
                     isAzureValid = false;
                 }
             }
-            
+
             // 根据 API Key 有效性切换语音列表
             if (isAzureValid) {
                 console.log('Azure API Key is valid, using Azure voice list');
@@ -738,7 +1827,7 @@
         try {
             const settings = await invoke('get_settings_command');
             const apiKey = settings.api_key || '';
-            const useAzure = settings.use_azure !== false; // 默认 true
+            const useAzure = settings.use_azure === true; // 只有明确为 true 时才启用
 
             // 检查 Azure 是否可用（需要 API Key 且开关开启）
             let isAzureAvailable = false;
@@ -753,36 +1842,13 @@
                 }
             }
 
+            // Edge TTS 模式下直接隐藏 SSML 控件（不支持 SSML 标签）
             if (isAzureAvailable) {
                 // Azure 可用，显示 SSML 控制
-                rateLabel.classList.remove('hidden', 'opacity-30');
-                rateSlider.classList.remove('hidden', 'opacity-30');
-                rateSlider.disabled = false;
-                rateDisplay.classList.remove('hidden', 'opacity-30');
-                btnRate.classList.remove('hidden', 'opacity-50');
-                btnRate.disabled = false;
-                if (pauseLabel) {
-                    pauseLabel.classList.remove('hidden', 'opacity-30');
-                }
-                btnPause05.classList.remove('hidden', 'opacity-50');
-                btnPause05.disabled = false;
-                btnPause1.classList.remove('hidden', 'opacity-50');
-                btnPause1.disabled = false;
+                rateControlsWrapper.style.display = '';
             } else {
-                // Azure 不可用（只有 Edge TTS），隐藏 SSML 控制
-                rateLabel.classList.add('opacity-30');
-                rateSlider.classList.add('opacity-30');
-                rateSlider.disabled = true;
-                rateDisplay.classList.add('opacity-30');
-                btnRate.classList.add('opacity-50');
-                btnRate.disabled = true;
-                if (pauseLabel) {
-                    pauseLabel.classList.add('opacity-30');
-                }
-                btnPause05.classList.add('opacity-50');
-                btnPause05.disabled = true;
-                btnPause1.classList.add('opacity-50');
-                btnPause1.disabled = true;
+                // Edge TTS 模式，隐藏 SSML 控件
+                rateControlsWrapper.style.display = 'none';
             }
         } catch (e) {
             console.log('Failed to update SSML controls visibility:', e);
@@ -795,6 +1861,71 @@
         voiceSelect.innerHTML = voices.map(v => 
             `<option value="${v.value}">${v.label}</option>`
         ).join('');
+    }
+
+    // 语言代码到文字描述的映射
+    const languageNames = {
+        'af-ZA': 'Afrikaans (South Africa)', 'am-ET': 'Amharic (Ethiopia)',
+        'ar-AE': 'Arabic (UAE)', 'ar-BH': 'Arabic (Bahrain)', 'ar-DZ': 'Arabic (Algeria)',
+        'ar-EG': 'Arabic (Egypt)', 'ar-IQ': 'Arabic (Iraq)', 'ar-JO': 'Arabic (Jordan)',
+        'ar-KW': 'Arabic (Kuwait)', 'ar-LB': 'Arabic (Lebanon)', 'ar-LY': 'Arabic (Libya)',
+        'ar-MA': 'Arabic (Morocco)', 'ar-OM': 'Arabic (Oman)', 'ar-QA': 'Arabic (Qatar)',
+        'ar-SA': 'Arabic (Saudi Arabia)', 'ar-SY': 'Arabic (Syria)', 'ar-TN': 'Arabic (Tunisia)',
+        'ar-YE': 'Arabic (Yemen)', 'as-IN': 'Assamese (India)', 'az-AZ': 'Azerbaijani',
+        'bg-BG': 'Bulgarian', 'bn-BD': 'Bengali (Bangladesh)', 'bn-IN': 'Bengali (India)',
+        'bs-BA': 'Bosnian', 'ca-ES': 'Catalan', 'cs-CZ': 'Czech',
+        'cy-GB': 'Welsh (UK)', 'da-DK': 'Danish', 'de-AT': 'German (Austria)',
+        'de-CH': 'German (Switzerland)', 'de-DE': 'German (Germany)', 'el-GR': 'Greek',
+        'en-AU': 'English (Australia)', 'en-CA': 'English (Canada)', 'en-GB': 'English (UK)',
+        'en-HK': 'English (Hong Kong)', 'en-IE': 'English (Ireland)', 'en-IN': 'English (India)',
+        'en-KE': 'English (Kenya)', 'en-NG': 'English (Nigeria)', 'en-NZ': 'English (New Zealand)',
+        'en-PH': 'English (Philippines)', 'en-SG': 'English (Singapore)', 'en-TZ': 'English (Tanzania)',
+        'en-US': 'English (US)', 'en-ZA': 'English (South Africa)',
+        'es-AR': 'Spanish (Argentina)', 'es-BO': 'Spanish (Bolivia)', 'es-CL': 'Spanish (Chile)',
+        'es-CO': 'Spanish (Colombia)', 'es-CR': 'Spanish (Costa Rica)', 'es-CU': 'Spanish (Cuba)',
+        'es-DO': 'Spanish (Dominican Republic)', 'es-EC': 'Spanish (Ecuador)',
+        'es-ES': 'Spanish (Spain)', 'es-GQ': 'Spanish (Equatorial Guinea)',
+        'es-GT': 'Spanish (Guatemala)', 'es-HN': 'Spanish (Honduras)',
+        'es-MX': 'Spanish (Mexico)', 'es-NI': 'Spanish (Nicaragua)',
+        'es-PA': 'Spanish (Panama)', 'es-PE': 'Spanish (Peru)', 'es-PR': 'Spanish (Puerto Rico)',
+        'es-PY': 'Spanish (Paraguay)', 'es-SV': 'Spanish (El Salvador)',
+        'es-US': 'Spanish (US)', 'es-UY': 'Spanish (Uruguay)', 'es-VE': 'Spanish (Venezuela)',
+        'et-EE': 'Estonian', 'eu-ES': 'Basque', 'fa-IR': 'Persian (Iran)',
+        'fi-FI': 'Finnish', 'fr-BE': 'French (Belgium)', 'fr-CA': 'French (Canada)',
+        'fr-CH': 'French (Switzerland)', 'fr-FR': 'French (France)',
+        'ga-IE': 'Irish (Ireland)', 'gl-ES': 'Galician', 'gu-IN': 'Gujarati (India)',
+        'he-IL': 'Hebrew', 'hi-IN': 'Hindi (India)', 'hr-HR': 'Croatian',
+        'hu-HU': 'Hungarian', 'hy-AM': 'Armenian', 'id-ID': 'Indonesian',
+        'is-IS': 'Icelandic', 'it-IT': 'Italian', 'ja-JP': 'Japanese',
+        'jv-ID': 'Javanese', 'ka-GE': 'Georgian', 'kk-KZ': 'Kazakh',
+        'km-KH': 'Khmer', 'kn-IN': 'Kannada (India)', 'ko-KR': 'Korean',
+        'lo-LA': 'Lao', 'lt-LT': 'Lithuanian', 'lv-LV': 'Latvian',
+        'mk-MK': 'Macedonian', 'ml-IN': 'Malayalam (India)', 'mn-MN': 'Mongolian',
+        'mr-IN': 'Marathi (India)', 'ms-MY': 'Malay', 'mt-MT': 'Maltese',
+        'my-MM': 'Burmese', 'nb-NO': 'Norwegian Bokmål', 'ne-NP': 'Nepali',
+        'nl-BE': 'Dutch (Belgium)', 'nl-NL': 'Dutch (Netherlands)',
+        'or-IN': 'Odia (India)', 'pa-IN': 'Punjabi (India)',
+        'pl-PL': 'Polish', 'ps-AF': 'Pashto', 'pt-BR': 'Portuguese (Brazil)',
+        'pt-PT': 'Portuguese (Portugal)', 'ro-RO': 'Romanian',
+        'ru-RU': 'Russian', 'rw-RW': 'Kinyarwanda', 'sa-IN': 'Sanskrit (India)',
+        'si-LK': 'Sinhala (Sri Lanka)', 'sk-SK': 'Slovak', 'sl-SI': 'Slovenian',
+        'so-SO': 'Somali', 'sq-AL': 'Albanian', 'sr-RS': 'Serbian',
+        'su-ID': 'Sundanese', 'sv-SE': 'Swedish', 'sw-KE': 'Swahili (Kenya)',
+        'sw-TZ': 'Swahili (Tanzania)', 'ta-IN': 'Tamil (India)', 'te-IN': 'Telugu (India)',
+        'th-TH': 'Thai', 'tr-TR': 'Turkish', 'uk-UA': 'Ukrainian',
+        'ur-IN': 'Urdu (India)', 'ur-PK': 'Urdu (Pakistan)', 'uz-UZ': 'Uzbek',
+        'vi-VN': 'Vietnamese', 'zh-CN': 'Chinese (Mandarin)',
+        'zh-TW': 'Chinese (Taiwan)',
+        'zu-ZA': 'Zulu (South Africa)'
+    };
+
+    // 动态填充语言下拉列表
+    function populateLanguageSelect() {
+        const languages = Object.keys(currentVoicesByLanguage).sort();
+        languageSelect.innerHTML = languages.map(lang => {
+            const name = languageNames[lang] || lang;
+            return `<option value="${lang}">${name}</option>`;
+        }).join('');
     }
 
     const textarea = document.getElementById('tts-input');
@@ -829,16 +1960,8 @@
         const sysLang = navigator.language || 'zh-CN';
         console.log('System language detected:', sysLang);
 
-        // 支持的语言列表
-        const supportedLanguages = [
-            'zh-CN', 'zh-TW', 'zh-HK',
-            'en-US', 'en-GB', 'en-AU', 'en-CA', 'en-IN',
-            'ja-JP', 'ko-KR',
-            'es-ES', 'es-MX',
-            'fr-FR', 'fr-CA',
-            'de-DE', 'it-IT',
-            'pt-BR', 'pt-PT'
-        ];
+        // 从 currentVoicesByLanguage 获取支持的语言列表
+        const supportedLanguages = Object.keys(currentVoicesByLanguage);
 
         // 常见语言变体映射到支持的语言
         const langMap = {
@@ -884,6 +2007,7 @@
     (async function init() {
         const engine = await detectTTSEngine();
         console.log(`TTS Engine: ${engine}`);
+        populateLanguageSelect();
         detectAndSelectSystemLanguage();
         updateVoiceList(languageSelect.value);
 
@@ -903,7 +2027,8 @@
 
     // Update character count
     textarea.addEventListener('input', (e) => {
-      charCount.textContent = `${e.target.value.length} chars`;
+      const charsText = (window.i18n && window.i18n.t) ? window.i18n.t('chars') : 'chars';
+      charCount.textContent = `${e.target.value.length} ${charsText}`;
     });
 
     // Save To button - 设置保存路径
@@ -919,9 +2044,9 @@
                 localStorage.setItem('greader_save_path', savePath);
                 updateSavePathDisplay();
                 console.log('Save path set to:', savePath);
-                saveBtn.querySelector('span').textContent = 'SAVED';
+                saveBtn.textContent = 'SAVED';
                 setTimeout(() => {
-                    saveBtn.querySelector('span').textContent = 'Save To';
+                    saveBtn.textContent = 'Save To';
                 }, 1500);
             }
         } catch (e) {
@@ -1036,6 +2161,8 @@
     let audio = new Audio();
     let isPlaying = false;
     let isPreviewMode = false;
+    let isExternalAudioLoaded = false;
+    let bgMusicPath = null; // 背景音乐路径
 
     // Vertical volume slider
     const volSliderVertical = document.getElementById('vol-slider-vertical');
@@ -1052,32 +2179,39 @@
     const iconPlay = document.getElementById('icon-play');
     const iconPause = document.getElementById('icon-pause');
 
+    // 预览按钮点击
+    const btnPreview = document.getElementById('btn-preview');
+    btnPreview.addEventListener('click', async () => {
+        try {
+            const settings = await invoke('get_settings_command');
+            const apiKey = settings.api_key || '';
+            const region = settings.region || 'eastus';
+            const useEdge = settings.use_edge === true || settings.use_edge == null;
+            const voice = voiceSelect.value;
+
+            const dataUrl = await invoke('preview_voice', {
+                voice: voice,
+                useEdge: useEdge,
+                apiKey: apiKey,
+                region: region
+            });
+
+            currentAudioPath = 'preview';
+            isPreviewMode = true;
+            audio.src = dataUrl;
+            audio.volume = 1.0;
+            audio.muted = false;
+            await audio.play().catch(e => console.error('Play error:', e));
+        } catch (e) {
+            console.error('Preview failed:', e);
+            alert('预览失败: ' + e);
+        }
+    });
+
     btnPlayerPlay.addEventListener('click', async () => {
+        // 播放键只播放已加载的音频，不播放预览
         if (!currentAudioPath) {
-            // 无音频文件时，播放试听
-            try {
-                const settings = await invoke('get_settings_command');
-                const apiKey = settings.api_key || '';
-                const region = settings.region || 'eastus';
-                const useEdge = settings.use_edge === true || settings.use_edge == null;
-                const voice = voiceSelect.value;
-
-                const dataUrl = await invoke('preview_voice', {
-                    voice: voice,
-                    useEdge: useEdge,
-                    apiKey: apiKey,
-                    region: region
-                });
-
-                currentAudioPath = 'preview';
-                isPreviewMode = true;
-                audio.src = dataUrl;
-                audio.play();
-            } catch (e) {
-                console.error('Preview failed:', e);
-                alert('预览失败: ' + e);
-            }
-            return;
+            return; // 无音频时不做任何事
         }
 
         if (isPlaying) {
@@ -1116,12 +2250,17 @@
         audio.currentTime = 0;
         isPlaying = false;
         isPreviewMode = false;
+        isExternalAudioLoaded = false;
         currentAudioPath = null;
+        bgMusicPath = null; // 清除背景音乐
         iconPlay.classList.remove('hidden');
         iconPause.classList.add('hidden');
         document.getElementById('player-progress').style.width = '0%';
         document.getElementById('player-progress-handle').style.left = '0%';
         document.getElementById('player-current-time').textContent = '0:00';
+        // 隐藏背景音乐显示
+        document.getElementById('bg-music-display').classList.add('hidden');
+        document.getElementById('bg-music-name').textContent = '';
     });
 
     // Open Audio button
@@ -1146,18 +2285,24 @@
                 multiple: false,
                 filters: [{
                     name: 'Audio',
-                    extensions: ['wav', 'mp3', 'ogg', 'm4a', 'flac', 'aac']
+                    extensions: ['wav', 'mp3', 'ogg', 'm4a', 'flac', 'aac', 'wma']
+                }, {
+                    name: 'All Files',
+                    extensions: ['*']
                 }]
             });
             if (selected) {
                 // Use backend command to read audio file as base64 data URL
                 const dataUrl = await invoke('read_audio_file', { path: selected });
                 currentAudioPath = selected;
+                bgMusicPath = selected; // 保存背景音乐路径
                 audio.src = dataUrl;
+                isExternalAudioLoaded = true;
                 const fileName = selected.split(/[/\\]/).pop();
-                document.getElementById('player-file-name').textContent = fileName;
-                document.getElementById('player-file-name').title = selected;
-                console.log('Audio loaded:', fileName);
+                // 显示背景音乐文件名
+                document.getElementById('bg-music-name').textContent = fileName;
+                document.getElementById('bg-music-display').classList.remove('hidden');
+                console.log('Background music loaded:', fileName);
             }
         } catch (err) {
             console.error('Failed to open audio:', err);
@@ -1194,14 +2339,14 @@
         audio.currentTime = percent * audio.duration;
     });
 
-    // Execute button - generate speech
+    // Execute button - speech synthesis (NOT playback)
     playBtn.addEventListener('click', async () => {
       // 检查是否设置了保存路径
       if (!savePath) {
-        playBtn.querySelector('span').textContent = 'SET PATH FIRST';
+        playBtn.querySelector('span').textContent = window.i18n && window.i18n.t ? window.i18n.t('set_path_first') : 'SET PATH FIRST';
         playBtn.classList.add('animate-pulse');
         setTimeout(() => {
-            playBtn.querySelector('span').textContent = 'Execute';
+            playBtn.querySelector('span').textContent = window.i18n && window.i18n.t ? window.i18n.t('execute') : 'Execute';
             playBtn.classList.remove('animate-pulse');
         }, 2000);
         return;
@@ -1215,7 +2360,7 @@
       
       const span = playBtn.querySelector('span');
       const originalText = span.textContent;
-      span.textContent = 'SYNTHESIZING...';
+      span.textContent = window.i18n && window.i18n.t ? window.i18n.t('synthesizing') : 'SYNTHESIZING...';
       playBtn.classList.add('animate-pulse');
       
       try {
@@ -1232,25 +2377,61 @@
         });
         
         if (result.success) {
-            span.textContent = 'SUCCESS';
+            span.textContent = window.i18n && window.i18n.t ? window.i18n.t('success') : 'SUCCESS';
             trackEvent('execute_click');
-            // 显示文件保存路径，加载到播放器
             if (result.path) {
-                const fileName = result.path.split(/[/\\]/).pop();
-                console.log('File saved:', result.path);
-                // 使用后端命令加载音频到播放器
-                try {
-                    const dataUrl = await invoke('read_audio_file', { path: result.path });
-                    currentAudioPath = result.path;
-                    audio.src = dataUrl;
-                    document.getElementById('player-file-name').textContent = fileName;
-                    document.getElementById('player-file-name').title = result.path;
-                } catch (e) {
-                    console.error('Failed to load audio:', e);
+                const ttsPath = result.path;
+                // 混音：不管 bgMusicPath 是什么，只要有就混音
+                if (bgMusicPath) {
+                    console.log('[Execute] BGM path:', bgMusicPath);
+                    console.log('[Execute] TTS path:', ttsPath);
+                    span.textContent = window.i18n && window.i18n.t ? window.i18n.t('mixing') : 'MIXING...';
+                    try {
+                        const bgFileName = bgMusicPath.split(/[/\\]/).pop();
+                        const mixedPath = savePath + '/mixed_' + Date.now() + '.wav';
+                        console.log('[Execute] Calling mix_with_background...');
+                        const mixResult = await invoke('mix_with_background', {
+                            ttsPath: ttsPath,
+                            bgMusicPath: bgMusicPath,
+                            outputPath: mixedPath,
+                            bgVolume: 0.15
+                        });
+                        console.log('[Execute] Mix result:', mixResult);
+                        if (mixResult.success && mixResult.path) {
+                            const dataUrl = await invoke('read_audio_file', { path: mixResult.path });
+                            currentAudioPath = mixResult.path;
+                            audio.src = dataUrl;
+                            document.getElementById('bg-music-name').textContent = bgFileName + ' + TTS';
+                            document.getElementById('bg-music-display').classList.remove('hidden');
+                            console.log('Mixed audio loaded:', mixResult.path);
+                        } else {
+                            console.error('[Execute] Mix failed:', mixResult.message);
+                            const dataUrl = await invoke('read_audio_file', { path: ttsPath });
+                            currentAudioPath = ttsPath;
+                            audio.src = dataUrl;
+                        }
+                    } catch (e) {
+                        console.error('[Execute] Mix error:', e);
+                        const dataUrl = await invoke('read_audio_file', { path: ttsPath });
+                        currentAudioPath = ttsPath;
+                        audio.src = dataUrl;
+                    }
+                } else {
+                    console.log('[Execute] No BGM, loading TTS directly');
+                    const fileName = ttsPath.split(/[/\\]/).pop();
+                    try {
+                        const dataUrl = await invoke('read_audio_file', { path: ttsPath });
+                        currentAudioPath = ttsPath;
+                        audio.src = dataUrl;
+                        document.getElementById('bg-music-name').textContent = fileName;
+                        document.getElementById('bg-music-display').classList.remove('hidden');
+                    } catch (e) {
+                        console.error('Failed to load audio:', e);
+                    }
                 }
             }
         } else {
-            span.textContent = 'FAILED';
+            span.textContent = window.i18n && window.i18n.t ? window.i18n.t('failed') : 'FAILED';
             console.error('TTS Error:', result.message);
             // 显示错误提示
             const errorMsg = result.message || 'Unknown error';
@@ -1261,7 +2442,7 @@
             }
         }
       } catch (e) {
-        span.textContent = 'ERROR';
+        span.textContent = window.i18n && window.i18n.t ? window.i18n.t('error') : 'ERROR';
         console.error('Invoke error:', e);
         alert('System Error: ' + e);
       }

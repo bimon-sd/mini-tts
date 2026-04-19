@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>G-Reader Settings</title>
+<title>Mini TTS Settings</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&amp;display=swap" rel="stylesheet"/>
 <script>
@@ -22,6 +22,7 @@
       }
     }
   </script>
+<script src="i18n/core.js"></script>
 <style>
     body {
       background-color: transparent;
@@ -62,24 +63,24 @@
 <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
-<span class="text-[13px] font-black tracking-[0.15em] uppercase text-nearWhite">Settings</span>
+<span class="text-[13px] font-black tracking-[0.15em] uppercase text-nearWhite" data-i18n="settings">Settings</span>
 </div>
 <div class="flex space-x-2 items-center">
-<button class="w-2.5 h-2.5 rounded-full bg-borderGray hover:bg-yellow-500 transition-colors" id="btn-minimize" title="Minimize"></button>
-<button class="w-2.5 h-2.5 rounded-full bg-borderGray hover:bg-green-500 transition-colors" id="btn-maximize" title="Maximize"></button>
-<button class="w-2.5 h-2.5 rounded-full bg-red-900/80 hover:bg-red-500 transition-colors" id="btn-close" title="Close"></button>
+<button class="w-2.5 h-2.5 rounded-full bg-borderGray hover:bg-yellow-500 transition-colors" id="btn-minimize" title="Minimize" data-i18n-title="minimize"></button>
+<button class="w-2.5 h-2.5 rounded-full bg-borderGray hover:bg-green-500 transition-colors" id="btn-maximize" title="Maximize" data-i18n-title="maximize"></button>
+<button class="w-2.5 h-2.5 rounded-full bg-red-900/80 hover:bg-red-500 transition-colors" id="btn-close" title="Close" data-i18n-title="close"></button>
 </div>
 </header>
 <div class="content-area flex-grow p-5">
 <section class="space-y-4">
-<h2 class="text-[12px] font-bold text-neonGreen uppercase tracking-widest mb-4">Azure TTS Configuration</h2>
+<h2 class="text-[12px] font-bold text-neonGreen uppercase tracking-widest mb-4" data-i18n="azure_tts_config">Azure TTS Configuration</h2>
 <div class="flex items-center">
 <div class="flex-grow">
-<label class="block text-[11px] text-nearWhite uppercase font-bold mb-2 tracking-wider">API Key</label>
+<label class="block text-[11px] text-nearWhite uppercase font-bold mb-2 tracking-wider" data-i18n="api_key">API Key</label>
 <input class="w-full bg-darkGray border border-borderGray rounded-xl px-4 py-2.5 text-base text-white placeholder-nearWhite/30 focus:outline-none focus:border-neonGreen/50 transition-all" placeholder="Enter your Azure Speech API Key" type="password" id="setting-api-key"/>
 </div>
 <div class="flex items-center ml-4 mt-6">
-<span class="text-[10px] text-gray-400 mr-2 uppercase font-bold tracking-wider">Enable</span>
+<span class="text-[10px] text-gray-400 mr-2 uppercase font-bold tracking-wider" data-i18n="enable">Enable</span>
 <label class="relative inline-flex items-center cursor-pointer">
 <input checked class="sr-only peer" type="checkbox" id="setting-use-azure"/>
 <div class="w-9 h-5 bg-borderGray peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-neonGreen"></div>
@@ -87,7 +88,7 @@
 </div>
 </div>
 <div class="mt-4">
-<label class="block text-[11px] text-nearWhite uppercase font-bold mb-2 tracking-wider">Region</label>
+<label class="block text-[11px] text-nearWhite uppercase font-bold mb-2 tracking-wider" data-i18n="region">Region</label>
 <select class="w-full bg-darkGray border border-borderGray rounded-xl px-4 py-2.5 text-base text-neonGreen font-medium focus:outline-none focus:border-neonGreen/50 transition-all cursor-pointer" id="setting-region">
 <option value="eastasia">East Asia</option>
 <option value="southeastasia">Southeast Asia</option>
@@ -118,11 +119,25 @@
 </div>
 </section>
 <section class="mt-6 space-y-4">
-<h2 class="text-[12px] font-bold text-neonGreen uppercase tracking-widest mb-4">Fallback: Edge TTS</h2>
+<h2 class="text-[12px] font-bold text-neonGreen uppercase tracking-widest mb-4" data-i18n="ui_language">UI Language</h2>
+<div class="flex items-center">
+<select class="flex-grow bg-darkGray border border-borderGray rounded-xl px-4 py-2.5 text-base text-neonGreen font-medium focus:outline-none focus:border-neonGreen/50 transition-all cursor-pointer" id="setting-ui-lang">
+<option value="en">English</option>
+<option value="zh">简体中文</option>
+<option value="ja">日本語</option>
+<option value="ko">한국어</option>
+<option value="de">Deutsch</option>
+<option value="fr">Français</option>
+<option value="es">Español</option>
+</select>
+</div>
+</section>
+<section class="mt-6 space-y-4">
+<h2 class="text-[12px] font-bold text-neonGreen uppercase tracking-widest mb-4" data-i18n="edge_tts_config">Fallback: Edge TTS</h2>
 <div class="flex items-center justify-between py-2">
 <div>
-<p class="text-base font-medium text-nearWhite">Enable Edge TTS Backup</p>
-<p class="text-xs text-gray-500 mt-0.5">Use Edge TTS when Azure fails (free)</p>
+<p class="text-base font-medium text-nearWhite" data-i18n="enable_edge">Enable Edge TTS Backup</p>
+<p class="text-xs text-gray-500 mt-0.5" data-i18n="edge_tts_desc">Use Edge TTS when Azure fails (free)</p>
 </div>
 <label class="relative inline-flex items-center cursor-pointer">
 <input checked class="sr-only peer" type="checkbox" id="setting-use-edge"/>
@@ -132,17 +147,25 @@
 </section>
 </div>
 <footer class="flex justify-between items-center px-5 py-3 bg-darkGray/50 border-t border-borderGray">
-<button class="px-4 py-2 text-[11px] font-bold text-gray-400 hover:text-white transition-colors" id="btn-discard">Cancel</button>
-<button class="bg-neonGreen text-black px-6 py-2 rounded-lg text-[11px] font-black uppercase tracking-wider hover:bg-white transition-all" id="btn-save-settings">Save</button>
+<button class="px-4 py-2 text-[11px] font-bold text-gray-400 hover:text-white transition-colors" id="btn-discard" data-i18n="cancel">Cancel</button>
+<button class="bg-neonGreen text-black px-6 py-2 rounded-lg text-[11px] font-black uppercase tracking-wider hover:bg-white transition-all" id="btn-save-settings" data-i18n="save">Save</button>
 </footer>
 </div>
 <script>
     const { invoke } = window.__TAURI__.core;
 
-    document.addEventListener('DOMContentLoaded', async () => {
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize i18n for settings page
+        window.i18n.init();
+
+        // Set UI language dropdown to current selection
+        const uiLangSelect = document.getElementById('setting-ui-lang');
+        if (uiLangSelect && window.i18n && window.i18n.currentLocale) {
+            uiLangSelect.value = window.i18n.currentLocale;
+        }
+
         // 先尝试从后端加载设置
-        try {
-            const backendSettings = await invoke('get_settings_command');
+        invoke('get_settings_command').then(backendSettings => {
             if (backendSettings.api_key) {
                 document.getElementById('setting-api-key').value = backendSettings.api_key;
             }
@@ -155,7 +178,7 @@
             if (backendSettings.use_azure !== undefined) {
                 document.getElementById('setting-use-azure').checked = backendSettings.use_azure;
             }
-        } catch(e) {
+        }).catch(e => {
             console.log('Failed to load settings from backend, using localStorage');
             // 回退到 localStorage
             const settings = JSON.parse(localStorage.getItem('greader-settings') || '{}');
@@ -163,7 +186,7 @@
             if (settings.region) document.getElementById('setting-region').value = settings.region;
             if (settings.use_edge !== undefined) document.getElementById('setting-use-edge').checked = settings.use_edge;
             if (settings.use_azure !== undefined) document.getElementById('setting-use-azure').checked = settings.use_azure;
-        }
+        });
     });
 
     document.getElementById('btn-save-settings').addEventListener('click', async () => {
@@ -171,38 +194,17 @@
         const region = document.getElementById('setting-region').value;
         const useEdge = document.getElementById('setting-use-edge').checked;
         let useAzure = document.getElementById('setting-use-azure').checked;
+        const uiLang = document.getElementById('setting-ui-lang').value;
 
-        // 如果填了 API key，自动启用 use_azure
-        if (apiKey && !useAzure) {
-            useAzure = true;
-            document.getElementById('setting-use-azure').checked = true;
-        }
+        // Save UI language preference to localStorage
+        localStorage.setItem('mini-tts-locale', uiLang);
 
-        // 如果开启了 use_azure 且有 key，先验证一下
-        let azureValid = false;
-        if (useAzure && apiKey) {
-            try {
-                azureValid = await invoke('validate_azure_api_key', {
-                    apiKey: apiKey,
-                    region: region
-                });
-            } catch(e) {
-                azureValid = false;
-            }
-            if (!azureValid) {
-                // 验证失败，给出提示但仍然保存
-                alert('Azure API Key validation failed. Please check your key and region.');
-                return;
-            }
-        }
-
-        // 如果开启了 use_azure 但没有有效 key，给出提示
+        // 如果开启了 use_azure 但没有 key，静默关闭 Azure
         if (useAzure && !apiKey) {
-            alert('Azure API Key is required when Azure TTS is enabled.\nPlease enter your API Key or disable Azure TTS.');
-            return;
+            useAzure = false;
         }
 
-        // 使用 snake_case 字段名以匹配后端 Rust Settings 结构体
+        // 构建设置对象
         const settings = {
             api_key: apiKey,
             region: region,
@@ -211,15 +213,17 @@
         };
         localStorage.setItem('greader-settings', JSON.stringify(settings));
 
-        try {
-            await invoke('save_settings', { settings: JSON.stringify(settings) });
-        } catch(e) {
-            console.log('Settings saved locally');
-        }
+        // 后端保存（不等待，不阻塞 UI）
+        invoke('save_settings', { settings: JSON.stringify(settings) }).catch(() => {});
 
+        // 发送事件通知主 UI（不等待）
+        const { emit } = window.__TAURI__.event;
+        emit('settings-changed', { useEdge: useEdge, useAzure: useAzure, uiLang: uiLang }).catch(() => {});
+
+        // 立即关闭设置窗口
         try {
             const { getCurrentWindow } = window.__TAURI__.window;
-            await getCurrentWindow().close();
+            getCurrentWindow().close();
         } catch(e) {
             window.close();
         }

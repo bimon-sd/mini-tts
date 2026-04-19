@@ -18,7 +18,15 @@
     "core:window:allow-hide",
     "core:window:allow-get-all-windows",
     "fs:default",
-    "fs:allow-read",
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [
+        { "path": "$APPDATA/**" },
+        { "path": "$DOWNLOAD/**" },
+        { "path": "$DOCUMENT/**" },
+        { "path": "$TEMP/**" }
+      ]
+    },
     "shell:allow-open",
     "dialog:default"
   ]

@@ -3,6 +3,7 @@
 use base64::Engine;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use std::os::windows::process::CommandExt;
 use tauri::{AppHandle, Manager};
 use tauri::WebviewWindowBuilder;
 
@@ -27,7 +28,7 @@ impl Default for Settings {
             api_key: None,
             region: Some("eastus".to_string()),
             use_edge: Some(true),
-            use_azure: Some(true),
+            use_azure: Some(false), // 默认关闭 Azure，用户需要手动启用
         }
     }
 }
@@ -120,14 +121,6 @@ fn save_settings_to_file(app: &AppHandle, settings: &Settings) -> Result<(), Str
     std::fs::write(&settings_path, settings_json).map_err(|e| e.to_string())
 }
 
-fn escape_xml(s: &str) -> String {
-    s.replace('&', "&amp;")
-     .replace('<', "&lt;")
-     .replace('>', "&gt;")
-     .replace('"', "&quot;")
-     .replace('\'', "&apos;")
-}
-
 #[cfg(windows)]
 fn run_hidden_command(script: &str) -> Result<String, String> {
     use std::process::Command;
@@ -171,50 +164,6 @@ fn run_hidden_command(script: &str) -> Result<String, String> {
     }
 }
 
-// 从文本中提取 vol 标签的值，返回第一个找到的值（用于 ffmpeg 全局音量调整）
-fn extract_vol_value(text: &str) -> Option<f64> {
-    let re = regex::Regex::new(r"\[\[vol\s+([\d.]+)\]\]").unwrap();
-    re.captures(text)
-        .and_then(|caps| caps[1].parse().ok())
-}
-
-// 使用 ffmpeg 调整音频音量
-fn apply_ffmpeg_volume(audio_path: &PathBuf, vol: f64) -> Result<(), String> {
-    let ffmpeg_path = "D:\\tools\\ffmpeg\\bin\\ffmpeg.exe";
-    let input_path = audio_path.to_string_lossy();
-
-    // 写标记文件到桌面证明代码被执行了
-    let desktop = dirs::desktop_dir().unwrap_or_else(|| PathBuf::from("."));
-    let marker_path = desktop.join("ffmpeg_called.txt");
-    let _ = std::fs::write(&marker_path, format!("vol={}, input={}, time={}", vol, input_path, std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()));
-
-    // 先写到临时文件，避免读写同一文件冲突
-    let temp_path = format!("{}.voltmp", input_path);
-
-    // 运行 ffmpeg volume 滤镜
-    let ps_script = format!(
-        r#"& "{}" -hide_banner -y -i "{}" -af "volume={}" -ar 24000 -ac 1 "{}" 2>&1"#,
-        ffmpeg_path, input_path, vol, temp_path
-    );
-
-    log::info!("Running ffmpeg: input={}, vol={}, temp={}", input_path, vol, temp_path);
-
-    let result = run_hidden_command(&ps_script)?;
-
-    if result.contains("Error") || result.contains("error opening") {
-        let _ = std::fs::remove_file(&temp_path);
-        Err(format!("FFmpeg volume failed: {}", result))
-    } else {
-        // 用临时文件替换原文件
-        if let Err(e) = std::fs::rename(&temp_path, audio_path) {
-            std::fs::copy(&temp_path, audio_path).map_err(|e| format!("Copy failed: {}", e))?;
-            let _ = std::fs::remove_file(&temp_path);
-        }
-        log::info!("FFmpeg volume adjusted: {}x", vol);
-        Ok(())
-    }
-}
-
 #[tauri::command]
 async fn generate_speech(
     app: AppHandle,
@@ -251,7 +200,7 @@ async fn generate_speech(
     let settings = get_settings(&app);
     let api_key = settings.api_key.unwrap_or_default();
     let region = settings.region.unwrap_or_else(|| "eastus".to_string());
-    let mut use_azure = settings.use_azure.unwrap_or(true);
+    let use_azure = settings.use_azure.unwrap_or(true);
     let mut use_edge = settings.use_edge.unwrap_or(true);
 
     // 如果两个 TTS 引擎都被禁用了（保底），自动启用 Edge TTS
@@ -260,14 +209,25 @@ async fn generate_speech(
         use_edge = true;
     }
 
-    let output_path = save_dir.join(format!("{}.wav", filename));
+    // 清理文件名，防止路径遍历攻击
+    let sanitized_filename = filename
+        .chars()
+        .filter(|c| c.is_alphanumeric() || *c == '-' || *c == '_' || *c == ' ' || *c == '.')
+        .collect::<String>();
+    let safe_filename = if sanitized_filename.is_empty() {
+        "output".to_string()
+    } else {
+        sanitized_filename
+    };
+
+    let output_path = save_dir.join(format!("{}.wav", safe_filename));
 
     // 转换 SSML 符号
     let ssml_text = convert_ssml_markers(&text);
     log::info!("SSML converted text length: {}", ssml_text.len());
 
     // 检测是否包含 SSML 标签（表示用户使用了高级功能）
-    let has_ssml = ssml_text.contains('<') && ssml_text.contains("break") || ssml_text.contains("prosody");
+    let has_ssml = ssml_text.contains('<') && (ssml_text.contains("break") || ssml_text.contains("prosody"));
 
     // SSML 标签检测：Azure TTS 支持 inline prosody，Edge TTS 不支持（会产生嵌套无效标签）
     // 所以有 SSML 标签时优先使用 Azure TTS
@@ -281,14 +241,6 @@ async fn generate_speech(
         match call_azure_tts(&ssml_text, &voice, velocity, &output_path, &api_key, &region) {
             Ok(_) => {
                 log::info!("Audio saved to: {}", output_path.display());
-                // 检查是否有 vol 标签，用 ffmpeg 调整音量
-                if let Some(vol) = extract_vol_value(&text) {
-                    log::info!("Detected vol tag: {}, applying ffmpeg volume", vol);
-                    if let Err(e) = apply_ffmpeg_volume(&output_path, vol) {
-                        log::warn!("FFmpeg volume adjustment failed: {}", e);
-                        // 继续返回成功，音频已生成只是音量没调而已
-                    }
-                }
                 return Ok(ApiResponse {
                     success: true,
                     message: Some("Speech generated successfully!".to_string()),
@@ -325,13 +277,6 @@ async fn generate_speech(
     match call_edge_tts(&ssml_text, &voice, velocity, &output_path) {
         Ok(_) => {
             log::info!("Edge TTS audio saved to: {}", output_path.display());
-            // 检查是否有 vol 标签，用 ffmpeg 调整音量
-            if let Some(vol) = extract_vol_value(&text) {
-                log::info!("Detected vol tag: {}, applying ffmpeg volume", vol);
-                if let Err(e) = apply_ffmpeg_volume(&output_path, vol) {
-                    log::warn!("FFmpeg volume adjustment failed: {}", e);
-                }
-            }
             Ok(ApiResponse {
                 success: true,
                 message: Some("Speech generated successfully! (via Edge TTS)".to_string()),
@@ -358,6 +303,15 @@ async fn generate_speech(
 // [[slnc X]] -> <break time="Xms"/>
 // [[rate X]]text[[/rate]] -> <prosody rate="X">text</prosody>
 // [[vol X]]text[[/vol]] -> <prosody volume="X">text</prosody>
+// 注意：用户内容会被转义以防止 SSML 注入
+fn escape_ssml_content(s: &str) -> String {
+    s.replace('&', "&amp;")
+     .replace('<', "&lt;")
+     .replace('>', "&gt;")
+     .replace('"', "&quot;")
+     .replace('\'', "&apos;")
+}
+
 fn convert_ssml_markers(text: &str) -> String {
     let mut result = text.to_string();
 
@@ -377,7 +331,7 @@ fn convert_ssml_markers(text: &str) -> String {
     let re_rate = regex::Regex::new(r"\[\[rate\s+([\d.]+)\]\](.*?)\[\[/rate\]\]").unwrap();
     result = re_rate.replace_all(&result, |caps: &regex::Captures| {
         let rate: f64 = caps[1].parse().unwrap_or(1.0);
-        let content = &caps[2];
+        let content = escape_ssml_content(&caps[2]);  // 转义用户内容
         let percent = ((rate - 1.0) * 100.0).round() as i32;
         let rate_str = if percent >= 0 {
             format!("+{}%", percent)
@@ -392,7 +346,7 @@ fn convert_ssml_markers(text: &str) -> String {
     let re_vol = regex::Regex::new(r"\[\[vol\s+([\d.]+)\]\](.*?)\[\[/vol\]\]").unwrap();
     result = re_vol.replace_all(&result, |caps: &regex::Captures| {
         let vol: f64 = caps[1].parse().unwrap_or(1.0);
-        let content = &caps[2];
+        let content = escape_ssml_content(&caps[2]);  // 转义用户内容
         // Azure prosody volume: 0-100 绝对值，或 +X%/-X% 相对值
         // 转换为 50-200 的绝对值试试
         let vol_val = (vol * 100.0).round() as i32;
@@ -567,7 +521,7 @@ fn get_python_exe_path() -> Result<PathBuf, String> {
 
     // 打包后必须找到嵌入式 Python，不再回退到系统 Python
     let tried_paths: Vec<String> = candidates.iter().map(|p| p.display().to_string()).collect();
-    Err(format!("未找到内置 Python，请重新安装 G-Reader。尝试过的路径: {}", tried_paths.join(", ")))
+    Err(format!("未找到内置 Python，请重新安装 Mini TTS。尝试过的路径: {}", tried_paths.join(", ")))
 }
 
 fn call_edge_tts(text: &str, voice: &str, rate: f64, output_path: &PathBuf) -> Result<(), String> {
@@ -586,7 +540,7 @@ fn call_edge_tts(text: &str, voice: &str, rate: f64, output_path: &PathBuf) -> R
 
     // 获取打包的 Python 解释器
     let python_exe = get_python_exe_path()
-        .map_err(|e| format!("Python not found: {}. Please reinstall G-Reader.", e))?;
+        .map_err(|e| format!("Python not found: {}. Please reinstall Mini TTS.", e))?;
     log::info!("Using Python: {}", python_exe.display());
 
     // 将文本写入临时文件以避免命令行编码问题
@@ -702,7 +656,7 @@ async fn open_settings_window(app: AppHandle) -> Result<(), String> {
     
     // 创建新的设置窗口
     WebviewWindowBuilder::new(&app, "settings", tauri::WebviewUrl::App("settings.html".into()))
-        .title("G-Reader Settings")
+        .title("Mini TTS Settings")
         .inner_size(500.0, 420.0)
         .min_inner_size(400.0, 350.0)
         .resizable(true)
@@ -765,14 +719,87 @@ try {{
     }
 }
 
+// 验证路径是否在允许的目录内（防止目录遍历攻击）
+fn is_path_allowed(path: &PathBuf, allowed_dirs: &[PathBuf]) -> bool {
+    // 先解析为绝对路径并规范化
+    let abs_path = if path.is_absolute() {
+        path.clone()
+    } else {
+        return false; // 只允许绝对路径
+    };
+
+    for allowed_dir in allowed_dirs {
+        let allowed_abs = if allowed_dir.is_absolute() {
+            allowed_dir.clone()
+        } else {
+            continue;
+        };
+
+        // 检查目标路径是否在允许目录内
+        if abs_path.starts_with(&allowed_abs) {
+            return true;
+        }
+    }
+    false
+}
+
+// 获取允许访问的目录列表
+fn get_allowed_dirs() -> Vec<PathBuf> {
+    let mut dirs = Vec::new();
+
+    // 添加桌面目录
+    if let Some(desktop) = dirs::desktop_dir() {
+        dirs.push(desktop);
+    }
+    // 添加用户下载目录
+    if let Some(download) = dirs::download_dir() {
+        dirs.push(download);
+    }
+    // 添加文档目录
+    if let Some(documents) = dirs::document_dir() {
+        dirs.push(documents);
+    }
+    // 添加应用配置目录
+    if let Ok(app_dir) = std::env::current_exe() {
+        if let Some(parent) = app_dir.parent() {
+            dirs.push(parent.to_path_buf());
+        }
+    }
+    // 添加临时目录
+    dirs.push(std::env::temp_dir());
+
+    dirs
+}
+
 // 从 PDF 文件提取文本内容
 #[tauri::command]
 async fn extract_pdf_text(path: String) -> Result<String, String> {
     log::info!("Extracting text from PDF: {}", path);
 
     let path_buf = PathBuf::from(&path);
+
+    // 路径安全检查
+    if !path_buf.is_absolute() {
+        return Err("Invalid path: must be absolute".to_string());
+    }
+
+    let allowed_dirs = get_allowed_dirs();
+    if !is_path_allowed(&path_buf, &allowed_dirs) {
+        log::warn!("Blocked attempt to read PDF outside allowed directories: {}", path);
+        return Err("Access denied: path not allowed".to_string());
+    }
+
     if !path_buf.exists() {
         return Err("File not found".to_string());
+    }
+
+    // 检查文件扩展名
+    let extension = path_buf.extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("")
+        .to_lowercase();
+    if extension != "pdf" {
+        return Err("Invalid file type: only PDF files are allowed".to_string());
     }
 
     match pdf_extract::extract_text(&path) {
@@ -793,6 +820,12 @@ async fn read_audio_file(path: String) -> Result<String, String> {
     log::info!("Reading audio file: {}", path);
 
     let path_buf = PathBuf::from(&path);
+
+    // 只检查是否是绝对路径
+    if !path_buf.is_absolute() {
+        return Err("Invalid path: must be absolute".to_string());
+    }
+
     if !path_buf.exists() {
         return Err("File not found".to_string());
     }
@@ -803,6 +836,7 @@ async fn read_audio_file(path: String) -> Result<String, String> {
         .unwrap_or("")
         .to_lowercase();
 
+    // 验证是支持的音频格式
     let mime_type = match extension.as_str() {
         "wav" => "audio/wav",
         "mp3" => "audio/mpeg",
@@ -811,7 +845,7 @@ async fn read_audio_file(path: String) -> Result<String, String> {
         "flac" => "audio/flac",
         "aac" => "audio/aac",
         "wma" => "audio/x-ms-wma",
-        _ => "application/octet-stream",
+        _ => return Err("Invalid file type: only audio files are allowed".to_string()),
     };
 
     let file_data = std::fs::read(&path_buf).map_err(|e| {
@@ -845,15 +879,12 @@ async fn preview_voice(voice: String, use_edge: bool, api_key: Option<String>, r
     };
 
     // 根据音色名称推断语言，选择对应的预览文本
-    let preview_text = if voice.starts_with("zh-CN") || voice.starts_with("zh-TW") || voice.starts_with("zh-HK") {
+    let preview_text = if voice.starts_with("zh-") {
         // 中文音色
         "你好，这里是音色测试，你可以通过试听选择自己喜欢的音色。"
-    } else if voice.starts_with("de-") {
-        // 德语音色
-        "Hallo, dies ist ein Stimmtest. Sie können ihn nutzen, um Ihre bevorzugte Stimme auszuwählen."
     } else if voice.starts_with("ja-") {
         // 日语音色
-        "こんにちは、これは音声テストです。聴いて、好みの音声を選ぶことができます。"
+        "こんにちは、これは音声テストです。聴いて，好みの音声を選ぶことができます。"
     } else if voice.starts_with("ko-") {
         // 韩语音色
         "안녕하세요, 이것은 음성 테스트입니다. 청취하여 좋아하는 음성을 선택할 수 있습니다."
@@ -866,12 +897,60 @@ async fn preview_voice(voice: String, use_edge: bool, api_key: Option<String>, r
     } else if voice.starts_with("it-") {
         // 意大利语音色
         "Ciao, questo è un test vocale. Puoi usarlo per visualizzare in anteprima e scegliere la tua voce preferita."
-    } else if voice.starts_with("pt-PT") {
-        // 葡萄牙语（葡萄牙）音色
-        "Olá, este é um teste de voz. Pode usá-lo para pré-visualizar e escolher a sua voz favorita."
-    } else if voice.starts_with("pt-BR") {
-        // 葡萄牙语（巴西）音色
-        "Olá, isto é um teste de voz. Você pode usá-lo para visualizar e escolher sua voz favorita."
+    } else if voice.starts_with("pt-") {
+        // 葡萄牙语音色
+        "Olá, isto é um teste de voz. Pode usá-lo para visualizar e escolher a sua voz favorita."
+    } else if voice.starts_with("de-") {
+        // 德语音色
+        "Hallo, dies ist ein Stimmtest. Sie können ihn nutzen, um Ihre bevorzugte Stimme auszuwählen."
+    } else if voice.starts_with("ru-") {
+        // 俄语音色
+        "Привет! Это тест голоса. Вы можете прослушать и выбрать понравившийся голос."
+    } else if voice.starts_with("pl-") {
+        // 波兰语音色
+        "Cześć! To jest test głosu. Możesz go użyć, aby posłuchać i wybrać swój ulubiony głos."
+    } else if voice.starts_with("tr-") {
+        // 土耳其语音色
+        "Merhaba! Bu bir ses testidir. Beğendiğiniz sesi seçmek için dinleyebilirsiniz."
+    } else if voice.starts_with("vi-") {
+        // 越南语音色
+        "Xin chào! Đây là bài kiểm tra giọng nói. Bạn có thể nghe và chọn giọng yêu thích."
+    } else if voice.starts_with("th-") {
+        // 泰语音色
+        "สวัสดี! นี่คือการทดสอบเสียง คุณสามารถฟังและเลือกเสียงที่ชอบได้"
+    } else if voice.starts_with("ar-") {
+        // 阿拉伯语音色
+        "مرحباً! هذا اختبار صوتي. يمكنك الاستماع واختيار الصوت المفضل لديك."
+    } else if voice.starts_with("hi-") || voice.starts_with("bn-") || voice.starts_with("pa-") || voice.starts_with("ta-") || voice.starts_with("te-") || voice.starts_with("mr-") || voice.starts_with("ne-") || voice.starts_with("si-") {
+        // 南亚语音色（印地语、孟加拉语、旁遮普语、泰米尔语、泰卢固语、马拉地语、尼泊尔语、僧伽罗语）
+        "नमस्ते! यह एक आवाज़ परीक्षण है। आप इसे सुनकर अपनी पसंदीदा आवाज़ चुन सकते हैं।"
+    } else if voice.starts_with("id-") || voice.starts_with("ms-") || voice.starts_with("fil-") || voice.starts_with("jv-") {
+        // 东南亚语音色（印尼语、马来语、菲律宾语、爪哇语）
+        "Halo! Ini adalah tes suara. Anda dapat mendengarnya dan memilih suara favorit Anda."
+    } else if voice.starts_with("uk-") || voice.starts_with("cs-") || voice.starts_with("sk-") || voice.starts_with("sl-") || voice.starts_with("hr-") || voice.starts_with("sr-") || voice.starts_with("bg-") || voice.starts_with("mk-") || voice.starts_with("bs-") || voice.starts_with("et-") || voice.starts_with("lv-") || voice.starts_with("lt-") {
+        // 东欧/斯拉夫语音色
+        "Ahoj! Toto je test hlasu. Můžete ho poslouchat a vybrat si svůj oblíbený hlas."
+    } else if voice.starts_with("sv-") || voice.starts_with("da-") || voice.starts_with("no-") || voice.starts_with("nb-") || voice.starts_with("fi-") || voice.starts_with("is-") {
+        // 北欧语音色
+        "Hej! Detta är ett rösttest. Du kan lyssna och välja din favorit-röst."
+    } else if voice.starts_with("el-") {
+        // 希腊语音色
+        "Γεια σου! Αυτό είναι ένα τεστ φωνής. Μπορείτε να το ακούσετε και να επιλέξετε την αγαπημένη σας φωνή."
+    } else if voice.starts_with("ro-") || voice.starts_with("hu-") {
+        // 罗马尼亚/匈牙利语音色
+        "Bună! Acesta este un test de voce. Poți să-l asculți și să-ți choți vocea preferată."
+    } else if voice.starts_with("he-") {
+        // 希伯来语音色
+        "שלום! זהו מבחן קול. אתה יכול להקשיב ולבחור את הקול האהוב עליך."
+    } else if voice.starts_with("fa-") || voice.starts_with("ps-") || voice.starts_with("ur-") {
+        // 波斯/普什图/乌尔都语音色
+        "سلام! یہ ایک آواز کا ٹیسٹ ہے۔ آپ اسے سن کر اپنی پسندیدہ آواز منتخب کر سکتے ہیں۔"
+    } else if voice.starts_with("af-") || voice.starts_with("zu-") || voice.starts_with("sw-") || voice.starts_with("yo-") || voice.starts_with("ha-") || voice.starts_with("am-") || voice.starts_with("so-") || voice.starts_with("ig-") || voice.starts_with("sn-") || voice.starts_with("rw-") || voice.starts_with("su-") {
+        // 非洲/苏里南语音色
+        "Sawubona! Lokhu kuwukuhlola iluLimi. Ungalwenza ukulalela ukhethe ikilimi lakho oyithandayo."
+    } else if voice.starts_with("en-") {
+        // 英文音色
+        "Hello, this is a voice test. You can use this to preview and choose your favorite voice."
     } else {
         // 默认英文
         "Hello, this is a voice test. You can use this to preview and choose your favorite voice."
@@ -879,33 +958,16 @@ async fn preview_voice(voice: String, use_edge: bool, api_key: Option<String>, r
 
     log::info!("Generating voice preview: voice={}, use_edge={}, text={}", voice, use_edge, preview_text);
 
-    // 优先使用 Azure TTS（如果有 API key）
-    if let Some(ref key) = api_key {
-        if !key.is_empty() {
-            let region_str = region.unwrap_or_else(|| "eastus".to_string());
-            let preview_path = std::env::temp_dir().join("preview_azure.wav");
-            match call_azure_tts(preview_text, &azure_voice, 1.0, &preview_path, key, &region_str) {
-                Ok(_) => {
-                    let audio_data = tokio::fs::read(&preview_path).await.map_err(|e| format!("Failed to read preview audio: {}", e))?;
-                    let base64_data = base64::engine::general_purpose::STANDARD.encode(&audio_data);
-                    let data_url = format!("data:audio/wav;base64,{}", base64_data);
-                    let _ = tokio::fs::remove_file(preview_path).await;
-                    log::info!("Azure voice preview generated successfully, size: {} bytes", audio_data.len());
-                    return Ok(data_url);
-                }
-                Err(e) => {
-                    log::warn!("Azure TTS preview failed: {}, trying Edge TTS...", e);
-                }
-            }
-        }
-    }
+    // 根据用户设置决定使用哪个引擎
+    // 如果 use_edge 为 true，优先使用 Edge TTS
+    // 如果 use_edge 为 false，尝试 Azure TTS（如果 API key 有效）
+    // 如果 Azure 失败或 API key 无效，fallback 到 Edge TTS
 
-    // 如果 use_edge 关闭且没有 API key，保底启用 Edge TTS
     let api_key_empty = api_key.as_ref().map(|k| k.is_empty()).unwrap_or(true);
-    let use_edge = if !use_edge && api_key_empty { true } else { use_edge };
 
-    // 回退到 Edge TTS（如果启用）
-    if use_edge {
+    // 如果用户选择了 Edge TTS，直接使用 Edge
+    if use_edge || api_key_empty {
+        // 使用 Edge TTS
         let python_script = format!(r#"
 import asyncio
 import edge_tts
@@ -924,7 +986,7 @@ except Exception as e:
 "#, preview_text, voice);
 
         let python_exe = get_python_exe_path()?;
-        log::info!("Using Python for preview: {}", python_exe.display());
+        log::info!("Using Python for Edge TTS preview: {}", python_exe.display());
 
         use std::os::windows::process::CommandExt;
         const CREATE_NO_WINDOW: u32 = 0x08000000;
@@ -945,7 +1007,8 @@ except Exception as e:
         let preview_path = std::env::temp_dir().join("preview_output.wav");
         let audio_data = tokio::fs::read(&preview_path).await.map_err(|e| format!("Failed to read preview audio: {}", e))?;
         let base64_data = base64::engine::general_purpose::STANDARD.encode(&audio_data);
-        let data_url = format!("data:audio/wav;base64,{}", base64_data);
+        // edge_tts saves as MP3 regardless of .wav extension, so use audio/mp3 MIME type
+        let data_url = format!("data:audio/mp3;base64,{}", base64_data);
 
         // 清理临时文件
         let _ = tokio::fs::remove_file(preview_path).await;
@@ -954,8 +1017,161 @@ except Exception as e:
         return Ok(data_url);
     }
 
-    // 两个都不可用
-    Err("Both Azure TTS and Edge TTS are disabled. Please enable at least one in Settings.".to_string())
+    // 用户选择了 Azure TTS 且有 API key，尝试 Azure
+    if let Some(ref key) = api_key {
+        if !key.is_empty() {
+            let region_str = region.unwrap_or_else(|| "eastus".to_string());
+            let preview_path = std::env::temp_dir().join("preview_azure.wav");
+            match call_azure_tts(preview_text, &azure_voice, 1.0, &preview_path, key, &region_str) {
+                Ok(_) => {
+                    let audio_data = tokio::fs::read(&preview_path).await.map_err(|e| format!("Failed to read preview audio: {}", e))?;
+                    let base64_data = base64::engine::general_purpose::STANDARD.encode(&audio_data);
+                    let data_url = format!("data:audio/wav;base64,{}", base64_data);
+                    let _ = tokio::fs::remove_file(preview_path).await;
+                    log::info!("Azure voice preview generated successfully, size: {} bytes", audio_data.len());
+                    return Ok(data_url);
+                }
+                Err(e) => {
+                    log::warn!("Azure TTS preview failed: {}, trying Edge TTS...", e);
+                    // Azure 失败，fallback 到 Edge TTS
+                }
+            }
+        }
+    }
+
+    // Fallback 到 Edge TTS
+    let python_script = format!(r#"
+import asyncio
+import edge_tts
+import sys
+
+async def main():
+    communicate = edge_tts.Communicate("{}", "{}")
+    await communicate.save("preview_output.wav")
+    print("EDGE_TTS_SUCCESS")
+
+try:
+    asyncio.run(main())
+except Exception as e:
+    print(f"EDGE_TTS_ERROR:{{e}}")
+    sys.exit(1)
+"#, preview_text, voice);
+
+    let python_exe = get_python_exe_path()?;
+    log::info!("Using Python for Edge TTS fallback: {}", python_exe.display());
+
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+    let output = std::process::Command::new(&python_exe)
+        .args(["-c", &python_script])
+        .creation_flags(CREATE_NO_WINDOW)
+        .current_dir(std::env::temp_dir())
+        .output()
+        .map_err(|e| format!("Failed to run Edge TTS: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        log::error!("Edge TTS error: {}", stderr);
+        return Err(format!("Voice preview failed: {}", stderr));
+    }
+
+    let preview_path = std::env::temp_dir().join("preview_output.wav");
+    let audio_data = tokio::fs::read(&preview_path).await.map_err(|e| format!("Failed to read preview audio: {}", e))?;
+    let base64_data = base64::engine::general_purpose::STANDARD.encode(&audio_data);
+    let data_url = format!("data:audio/wav;base64,{}", base64_data);
+
+    // 清理临时文件
+    let _ = tokio::fs::remove_file(preview_path).await;
+
+    log::info!("Edge TTS fallback preview generated successfully, size: {} bytes", audio_data.len());
+    Ok(data_url)
+}
+
+// 获取打包的 ffmpeg 路径
+fn get_ffmpeg_path() -> Result<PathBuf, String> {
+    let exe_path = std::env::current_exe().map_err(|e| format!("Cannot get exe path: {}", e))?;
+    let exe_dir = exe_path.parent().ok_or("Cannot get exe directory")?;
+
+    let ffmpeg_path = exe_dir.join("ffmpeg.exe");
+    if ffmpeg_path.exists() {
+        log::info!("Found ffmpeg at: {}", ffmpeg_path.display());
+        Ok(ffmpeg_path)
+    } else {
+        Err("未找到 ffmpeg，请重新安装 Mini TTS".to_string())
+    }
+}
+
+// 混音函数：TTS音频 + 背景音乐
+// 使用 ffmpeg 将背景音乐循环混合到 TTS 音频中
+fn mix_audio(tts_path: &PathBuf, bg_music_path: &PathBuf, output_path: &PathBuf, bg_volume: f64) -> Result<(), String> {
+    let ffmpeg_path = get_ffmpeg_path()?;
+
+    // 检查输入文件是否存在
+    if !tts_path.exists() {
+        return Err(format!("TTS file not found: {:?}", tts_path));
+    }
+    if !bg_music_path.exists() {
+        return Err(format!("BGM file not found: {:?}", bg_music_path));
+    }
+
+    // 使用 ffmpeg 直接混音
+    let filter = format!("[1:a]volume={}[bg];[0:a][bg]amix=inputs=2:duration=first", bg_volume);
+
+    let output = std::process::Command::new(&ffmpeg_path)
+        .args(["-y", "-i"])
+        .arg(tts_path)
+        .args(["-i"])
+        .arg(bg_music_path)
+        .args(["-filter_complex", &filter, "-shortest"])
+        .arg(output_path)
+        .creation_flags(0x08000000)
+        .output()
+        .map_err(|e| format!("Failed to run ffmpeg: {}", e))?;
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    if !output.status.success() {
+        log::error!("[mix_audio] ffmpeg failed: {}", stderr);
+        return Err(format!("ffmpeg failed: {}", stderr));
+    }
+
+    log::info!("[mix_audio] Mixing completed: {:?}", output_path);
+    Ok(())
+}
+
+// 混音命令：接收两个音频路径，生成混音后的音频
+#[tauri::command]
+async fn mix_with_background(tts_path: String, bg_music_path: String, output_path: String, bg_volume: f64) -> Result<ApiResponse, String> {
+    log::info!("Mix command: tts={}, bg={}, output={}, volume={}",
+        tts_path, bg_music_path, output_path, bg_volume);
+
+    let tts_path_buf = PathBuf::from(&tts_path);
+    let bg_path_buf = PathBuf::from(&bg_music_path);
+    let output_path_buf = PathBuf::from(&output_path);
+
+    // 检查文件是否存在
+    if !tts_path_buf.exists() {
+        return Err(format!("TTS file not found: {}", tts_path));
+    }
+    if !bg_path_buf.exists() {
+        return Err(format!("Background music file not found: {}", bg_music_path));
+    }
+
+    // 执行混音
+    match mix_audio(&tts_path_buf, &bg_path_buf, &output_path_buf, bg_volume) {
+        Ok(_) => {
+            log::info!("Mixed audio saved to: {}", output_path);
+            Ok(ApiResponse {
+                success: true,
+                message: Some("Audio mixed successfully!".to_string()),
+                path: Some(output_path),
+            })
+        }
+        Err(e) => {
+            log::error!("Audio mixing failed: {}", e);
+            Err(e)
+        }
+    }
 }
 
 fn main() {
@@ -963,7 +1179,7 @@ fn main() {
         .format_timestamp_secs()
         .init();
 
-    log::info!("G-Reader starting...");
+    log::info!("Mini TTS starting...");
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
@@ -978,6 +1194,7 @@ fn main() {
             extract_pdf_text,
             read_audio_file,
             preview_voice,
+            mix_with_background,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

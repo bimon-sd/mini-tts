@@ -1,6 +1,6 @@
 [package]
 name = "reader"
-version = "1.0.0"
+version = "1.0.1"
 description = "English Text to MP3 Reader"
 authors = [""]
 edition = "2021"
